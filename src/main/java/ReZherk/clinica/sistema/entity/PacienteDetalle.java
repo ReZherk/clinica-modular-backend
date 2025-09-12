@@ -21,7 +21,7 @@ public class PacienteDetalle {
  @JoinColumn(name = "Id_Usuario")
  private Usuario usuario;
 
- @Column(name = "DNI", length = 8, unique = true)
+ @Column(name = "DNI", length = 8, unique = true, columnDefinition = "CHAR(8)")
  private String dni;
 
  @Column(name = "FechaNacimiento")
