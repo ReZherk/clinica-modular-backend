@@ -8,7 +8,8 @@ import java.util.List;
 
 @Repository
 public interface HorarioMedicoRepository extends JpaRepository<HorarioMedico, Integer> {
- List<HorarioMedico> findByMedico_Id(Integer idMedico); // findByMedico.idUsuario si tu campo se llama idUsuario
 
- List<HorarioMedico> findByMedico_IdAndDiaSemana(Integer idMedico, String diaSemana);
+ List<HorarioMedico> findByMedico_IdUsuario(Integer idMedico);
+
+ List<HorarioMedico> findByMedico_IdUsuarioAndDiaSemana(Integer idMedico, String diaSemana);
 }
