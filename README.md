@@ -76,6 +76,7 @@ Sistema clínico modular desarrollado con Spring Boot que gestiona pacientes, m�
    ```
 
 4. **Compilar y ejecutar**
+
    ```bash
    # Compilar con Maven
    ./mvnw clean compile
@@ -97,16 +98,15 @@ Una vez ejecutada la aplicación, accede a:
 
 ```
 src/main/java/ReZherk/clinica/sistema/
-├── config/          # Configuraciones de seguridad y aplicación
-├── controller/      # Controladores REST
-├── dto/            # Objetos de transferencia de datos
-├── entity/         # Entidades de persistencia
-├── exception/      # Manejo de excepciones
-├── mapper/         # Mapeos con MapStruct
-├── repository/     # Repositorios de datos
-├── service/        # Lógica de negocio
-└── util/           # Utilidades varias
+├── SistemaApplication.java          # Clase principal de Spring Boot
+├── core/                           # Núcleo compartido del sistema
+├── infrastructure/                 # Capa de infraestructura
+├── modules/                        # Módulos de dominio
+└── web/                           # Configuración web global
 ```
+
+- [Arquitectura Modular por Dominios](./ARQUITECTURA.md)  
+  Detalles completos de la estructura, capas, módulos y principios aplicados.
 
 ## 🔐 Seguridad
 
