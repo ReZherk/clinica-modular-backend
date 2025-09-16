@@ -6,7 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import ReZherk.clinica.sistema.modules.patient.application.dto.request.LoginRequestDto;
 import ReZherk.clinica.sistema.modules.patient.application.dto.request.RegisterPacienteDto;
+import ReZherk.clinica.sistema.modules.patient.application.dto.response.LoginResponseDto;
 import ReZherk.clinica.sistema.modules.patient.application.dto.response.RegisterResponseDto;
 import ReZherk.clinica.sistema.modules.patient.application.service.UsuarioService;
 
@@ -25,4 +27,11 @@ public class AuthController {
     RegisterResponseDto response = usuarioService.registerPaciente(registerDto);
     return new ResponseEntity<>(response, HttpStatus.CREATED);
   }
+
+  @PostMapping("/login")
+  public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto loginDto) {
+    LoginResponseDto response = usuarioService.loginByDni(loginDto);
+    return ResponseEntity.ok(response);
+  }
+
 }

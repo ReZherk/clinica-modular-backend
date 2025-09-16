@@ -21,4 +21,13 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
 
  @Query("SELECT u FROM Usuario u WHERE u.estadoRegistro = true")
  java.util.List<Usuario> findAllActive();
+
+ @Query("""
+      SELECT u
+      FROM Usuario u
+      JOIN PacienteDetalle p ON p.usuario.id = u.id
+      WHERE p.dni = :dni
+   """)
+ Optional<Usuario> findByDni(@Param("dni") String dni);
+
 }

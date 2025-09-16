@@ -8,7 +8,9 @@ import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
 import ReZherk.clinica.sistema.modules.future_modules.dto.*;
 import ReZherk.clinica.sistema.modules.future_modules.mapper.MedicoDetalleMapper;
 import ReZherk.clinica.sistema.modules.future_modules.mapper.UsuarioMapper;
+import ReZherk.clinica.sistema.modules.patient.application.dto.request.LoginRequestDto;
 import ReZherk.clinica.sistema.modules.patient.application.dto.request.RegisterPacienteDto;
+import ReZherk.clinica.sistema.modules.patient.application.dto.response.LoginResponseDto;
 import ReZherk.clinica.sistema.modules.patient.application.dto.response.RegisterResponseDto;
 import ReZherk.clinica.sistema.modules.patient.application.dto.response.UsuarioResponseDto;
 import ReZherk.clinica.sistema.modules.patient.application.mapper.PacienteDetalleMapper;
@@ -215,4 +217,25 @@ public class UsuarioService {
 
     return usuarioMapper.toResponseDto(usuario);
   }
+
+  // Para el login
+  @Transactional(readOnly = true)
+  public LoginResponseDto loginByDni(LoginRequestDto loginDto) {
+    Usuario usuario = usuarioRepository.findByDni(loginDto.getDni())
+        .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con DNI: " + loginDto.getDni()));
+
+    String rawPasswordWithSalt = loginDto.getPassword() + usuario.getSalt();
+
+    if (!passwordEncoder.matches(rawPasswordWithSalt, usuario.getPasswordHash())) {
+      throw new BusinessException("Credenciales inválidas");
+    }
+
+    return new LoginResponseDto(
+        usuario.getId(),
+        usuario.getNombres(),
+        usuario.getApellidos(),
+        usuario.getEmail(),
+        "Inicio de sesión exitoso");
+  }
+
 }
