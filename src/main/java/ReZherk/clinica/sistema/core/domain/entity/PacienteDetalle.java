@@ -27,14 +27,6 @@ public class PacienteDetalle {
  @Column(name = "FechaNacimiento")
  private java.time.LocalDate fechaNacimiento;
 
- @ManyToOne
- @JoinColumn(name = "Id_Seguro")
- private Seguro seguro;
-
- @ManyToOne
- @JoinColumn(name = "Id_Ubigeo")
- private Ubigeo ubigeo;
-
  @Column(name = "Direccion")
  private String direccion;
 }

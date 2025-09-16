@@ -1,4 +1,4 @@
-package ReZherk.clinica.sistema.modules.patient.application.dto.request;
+package ReZherk.clinica.sistema.modules.auth.application.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
