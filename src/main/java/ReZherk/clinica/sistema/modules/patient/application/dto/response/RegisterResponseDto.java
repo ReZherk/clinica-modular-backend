@@ -10,5 +10,5 @@ import lombok.*;
 public class RegisterResponseDto {
  private Integer id;
  private String message;
- private UsuarioResponseDto usuario;
+ private PatientCreationResponseDto usuario;
 }

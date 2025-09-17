@@ -2,9 +2,10 @@ package ReZherk.clinica.sistema.core.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 
 @Entity
-@Table(name = "Especialidad")
+@Table(name = "especialidad")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,4 +23,7 @@ public class Especialidad {
 
  @Column(name = "Descripcion")
  private String descripcion;
+
+ @Column(name = "Tarifa", precision = 10, scale = 2)
+ private BigDecimal tarifa;
 }

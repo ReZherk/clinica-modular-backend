@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import ReZherk.clinica.sistema.modules.patient.application.dto.request.RegisterPacienteDto;
 import ReZherk.clinica.sistema.modules.patient.application.dto.response.RegisterResponseDto;
-import ReZherk.clinica.sistema.modules.patient.application.service.UsuarioService;
+import ReZherk.clinica.sistema.modules.patient.application.service.PacienteService;
 
 @RestController
 @RequestMapping("/api/patient")
@@ -16,7 +16,7 @@ import ReZherk.clinica.sistema.modules.patient.application.service.UsuarioServic
 @CrossOrigin(origins = "*")
 public class PatientController {
 
-  private final UsuarioService usuarioService;
+  private final PacienteService usuarioService;
 
   @PostMapping("/register")
   public ResponseEntity<RegisterResponseDto> registerPaciente(

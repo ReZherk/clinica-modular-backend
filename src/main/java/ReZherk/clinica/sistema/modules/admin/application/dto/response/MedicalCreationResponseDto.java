@@ -21,5 +21,6 @@ public class MedicalCreationResponseDto {
  private String telefono;
  private Boolean estadoRegistro;
  private Set<String> roles;
+ private String dni;
 
 }

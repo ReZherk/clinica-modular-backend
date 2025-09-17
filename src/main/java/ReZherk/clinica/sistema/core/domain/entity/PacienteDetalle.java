@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "Paciente_Detalle")
+@Table(name = "paciente_detalle")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,12 +21,18 @@ public class PacienteDetalle {
  @JoinColumn(name = "Id_Usuario")
  private Usuario usuario;
 
- @Column(name = "DNI", length = 8, unique = true, columnDefinition = "CHAR(8)")
- private String dni;
-
  @Column(name = "FechaNacimiento")
  private java.time.LocalDate fechaNacimiento;
 
  @Column(name = "Direccion")
  private String direccion;
+
+ @Column(name = "Departamento", length = 100)
+ private String departamento;
+
+ @Column(name = "Provincia", length = 100)
+ private String provincia;
+
+ @Column(name = "Distrito", length = 100)
+ private String distrito;
 }
