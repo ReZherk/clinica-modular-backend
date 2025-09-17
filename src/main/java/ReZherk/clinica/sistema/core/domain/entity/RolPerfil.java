@@ -25,6 +25,7 @@ public class RolPerfil {
  @Column(name = "Descripcion")
  private String descripcion;
 
+ @Builder.Default
  @Column(name = "EstadoRegistro", nullable = false)
  private Boolean estadoRegistro = true;
 
