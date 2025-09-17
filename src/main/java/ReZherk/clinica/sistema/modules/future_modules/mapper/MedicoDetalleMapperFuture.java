@@ -8,7 +8,7 @@ import ReZherk.clinica.sistema.modules.future_modules.dto.MedicoDetalleDto;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MedicoDetalleMapper {
+public class MedicoDetalleMapperFuture {
 
   public MedicoDetalle toEntity(MedicoDetalleDto dto, Usuario usuario) {
     return MedicoDetalle.builder()

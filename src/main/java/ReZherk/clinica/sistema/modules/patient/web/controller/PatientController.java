@@ -11,7 +11,7 @@ import ReZherk.clinica.sistema.modules.patient.application.dto.response.Register
 import ReZherk.clinica.sistema.modules.patient.application.service.UsuarioService;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/patient")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class PatientController {

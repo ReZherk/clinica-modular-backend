@@ -19,9 +19,6 @@ public class PacienteDetalleDto {
  @JsonFormat(pattern = "yyyy-MM-dd")
  private LocalDate fechaNacimiento;
 
- private Integer idSeguro;
- private Integer idUbigeo;
-
  @Size(max = 255, message = "La dirección no puede exceder 255 caracteres")
  private String direccion;
 }

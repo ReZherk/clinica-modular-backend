@@ -11,7 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin/medicos")
+@RequestMapping("/api/future_modules")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 @PreAuthorize("hasRole('ADMIN_MEDICOS') or hasRole('SUPERADMIN')")
@@ -19,7 +19,7 @@ public class AdminMedicosController {
 
   private final UsuarioService usuarioService;
 
-  @PostMapping("/register")
+  // @PostMapping("/register")
   public ResponseEntity<RegisterResponseDto> registerMedico(
       @Valid @RequestBody RegisterMedicoDto registerDto) {
 

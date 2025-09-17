@@ -6,7 +6,7 @@ import ReZherk.clinica.sistema.core.domain.repository.*;
 import ReZherk.clinica.sistema.core.shared.exception.BusinessException;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
 import ReZherk.clinica.sistema.modules.future_modules.dto.*;
-import ReZherk.clinica.sistema.modules.future_modules.mapper.MedicoDetalleMapper;
+import ReZherk.clinica.sistema.modules.future_modules.mapper.MedicoDetalleMapperFuture;
 import ReZherk.clinica.sistema.modules.future_modules.mapper.UsuarioMapper;
 import ReZherk.clinica.sistema.modules.patient.application.dto.request.RegisterPacienteDto;
 import ReZherk.clinica.sistema.modules.patient.application.dto.response.RegisterResponseDto;
@@ -34,7 +34,7 @@ public class UsuarioService {
 
   private final UsuarioMapper usuarioMapper;
   private final PacienteDetalleMapper pacienteDetalleMapper;
-  private final MedicoDetalleMapper medicoDetalleMapper;
+  private final MedicoDetalleMapperFuture medicoDetalleMapper;
 
   private final PasswordEncoder passwordEncoder;
 
