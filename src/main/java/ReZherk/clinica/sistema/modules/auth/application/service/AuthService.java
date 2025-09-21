@@ -8,6 +8,7 @@ import ReZherk.clinica.sistema.core.domain.entity.Usuario;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.exception.BusinessException;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
+import ReZherk.clinica.sistema.infrastructure.security.JwtUtil;
 import ReZherk.clinica.sistema.modules.auth.application.dto.request.LoginRequestDto;
 import ReZherk.clinica.sistema.modules.auth.application.dto.response.LoginResponseDto;
 
@@ -20,6 +21,7 @@ public class AuthService {
 
   private final UsuarioRepository usuarioRepository;
   private final PasswordEncoder passwordEncoder;
+  private final JwtUtil jwtUtil;
 
   public LoginResponseDto login(LoginRequestDto loginDto) {
     Usuario usuario = usuarioRepository.findByDni(loginDto.getDni())
@@ -37,12 +39,15 @@ public class AuthService {
         .map(rol -> rol.getNombre())
         .collect(Collectors.toList());
 
+    // Generar token con roles
+    String token = jwtUtil.generateToken(usuario.getDni(), roles.get(0));
+
     return new LoginResponseDto(
         usuario.getId(),
         usuario.getNombres(),
         usuario.getApellidos(),
         usuario.getEmail(),
         "Login exitoso",
-        roles);
+        roles, token);
   }
 }

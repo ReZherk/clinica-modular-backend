@@ -14,4 +14,5 @@ public class LoginResponseDto {
  private String email;
  private String message; // Ejemplo: "Login exitoso"
  private List<String> roles; // Lista de roles asignados
+ private String token;
 }

@@ -28,6 +28,7 @@ public class MedicoMapper {
         .nombres(dto.getNombres())
         .apellidos(dto.getApellidos())
         .dni(dto.getDni())
+        .fechaEmision(dto.getFechaEmision())
         .tipoDocumento(tipoDocumento)
         .email(dto.getEmail())
         .telefono(dto.getTelefono())

@@ -37,6 +37,7 @@ public class AdminRegisterController {
  @PostMapping("/especialidad/register")
  public ResponseEntity<Especialidad> crearEspecialidad(@RequestBody EspecialidadRequestDto dto) {
   Especialidad creada = especialidadService.crearEspecialidad(dto);
-  return ResponseEntity.ok(creada);
+  return new ResponseEntity<>(creada, HttpStatus.CREATED);
  }
+
 }
