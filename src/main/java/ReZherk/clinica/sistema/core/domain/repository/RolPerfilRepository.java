@@ -21,4 +21,6 @@ public interface RolPerfilRepository extends JpaRepository<RolPerfil, Integer> {
 
  @Query("SELECT r FROM RolPerfil r WHERE r.estadoRegistro = true ORDER BY r.nombre")
  List<RolPerfil> findAllActiveOrderByName();
+
+ Optional<RolPerfil> findByNombreIgnoreCase(String nombre);
 }
