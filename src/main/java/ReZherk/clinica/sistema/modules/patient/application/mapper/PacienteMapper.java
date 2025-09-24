@@ -40,6 +40,7 @@ public class PacienteMapper {
 
   public RegisterResponseDto toRegisterResponse(Usuario usuario, String message) {
     return RegisterResponseDto.builder()
+        .success(true)
         .id(usuario.getId())
         .message(message)
         .usuario(

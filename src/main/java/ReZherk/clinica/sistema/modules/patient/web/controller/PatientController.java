@@ -21,8 +21,13 @@ public class PatientController {
   @PostMapping("/register")
   public ResponseEntity<RegisterResponseDto> registerPaciente(
       @Valid @RequestBody RegisterPacienteDto registerDto) {
-
-    RegisterResponseDto response = usuarioService.registerPaciente(registerDto);
-    return new ResponseEntity<>(response, HttpStatus.CREATED);
+    try {
+      RegisterResponseDto response = usuarioService.registerPaciente(registerDto);
+      return new ResponseEntity<>(response, HttpStatus.CREATED);
+    } catch (Exception e) {
+      return ResponseEntity.badRequest()
+          .body(new RegisterResponseDto(false, "Error en registro: " + e.getMessage()));
+    }
   }
+
 }

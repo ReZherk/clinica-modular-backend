@@ -72,9 +72,10 @@ public class PacienteService {
   private Usuario createUsuarioBase(UsuarioBaseDto dto) {
     // Convertimos RegisterPacienteDto → Usuario
     Usuario usuario = pacienteMapper.toEntity((RegisterPacienteDto) dto);
-    String salt = SecurityUtils.generateSalt();
-    usuario.setSalt(salt);
-    usuario.setPasswordHash(passwordEncoder.encode(dto.getPassword() + salt));
+
+    // Guardamos la contraseña con BCrypt (el salt se genera internamente)
+    usuario.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
+
     return usuario;
   }
 

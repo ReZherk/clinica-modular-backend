@@ -57,7 +57,6 @@ public class AdminService {
     String salt = SecurityUtils.generateSalt();
     String hashedPassword = passwordEncoder.encode(dto.getPassword() + salt);
 
-    medico.setSalt(salt);
     medico.setPasswordHash(hashedPassword);
 
     return medico;

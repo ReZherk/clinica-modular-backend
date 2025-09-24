@@ -40,9 +40,6 @@ public class Usuario {
  @Column(name = "PasswordHash", nullable = false)
  private String passwordHash;
 
- @Column(name = "Salt")
- private String salt;
-
  @Column(name = "Email", unique = true, length = 150)
  private String email;
 
@@ -57,8 +54,37 @@ public class Usuario {
  private LocalDateTime fechaCreacion;
 
  // Relación con perfiles
- @ManyToMany(fetch = FetchType.LAZY)
+ @ManyToMany(fetch = FetchType.EAGER)
  @JoinTable(name = "usuario_perfil", joinColumns = @JoinColumn(name = "Id_Usuario"), inverseJoinColumns = @JoinColumn(name = "Id_Perfil"))
  @Builder.Default
  private Set<RolPerfil> perfiles = new HashSet<>();
+
+ // ======================
+ // MÉTODOS HELPER OPCIONALES
+ // ======================
+
+ /**
+  * Agregar un rol al usuario
+  */
+ public void addRol(RolPerfil rol) {
+  this.perfiles.add(rol);
+ }
+
+ /**
+  * Obtener todos los permisos del usuario (a través de sus roles/perfiles)
+  */
+ public Set<String> getAllPermissions() {
+  Set<String> permisos = new HashSet<>();
+  for (RolPerfil rol : this.perfiles) {
+   rol.getPermisos().forEach(p -> permisos.add(p.getActionKey()));
+  }
+  return permisos;
+ }
+
+ /**
+  * Verificar si el usuario tiene un permiso específico
+  */
+ public boolean hasPermission(String actionKey) {
+  return getAllPermissions().contains(actionKey);
+ }
 }

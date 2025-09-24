@@ -8,7 +8,15 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class RegisterResponseDto {
- private Integer id;
+
+ private boolean success;
  private String message;
+
+ private Integer id;
  private PatientCreationResponseDto usuario;
+
+ public RegisterResponseDto(boolean success, String message) {
+  this.success = success;
+  this.message = message;
+ }
 }

@@ -1,66 +1,80 @@
 package ReZherk.clinica.sistema.infrastructure.security;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.security.core.userdetails.User;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 
+import java.io.IOException;
+
+/**
+ * FILTRO JWT: Se ejecuta en cada petición para validar tokens
+ * 
+ * FUNCIONAMIENTO:
+ * 1. Cliente envía petición con header: Authorization: Bearer {token}
+ * 2. Este filtro intercepta la petición
+ * 3. Extrae y valida el token JWT
+ * 4. Si es válido, establece la autenticación en Spring Security
+ */
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtUtil jwtUtil;
 
-  public JwtAuthenticationFilter(JwtUtil jwtUtil) {
-    this.jwtUtil = jwtUtil;
-  }
+  private final CustomUserDetailsService userDetailsService;
 
+  /**
+   * FILTRO PRINCIPAL: Se ejecuta en cada petición
+   */
   @Override
-  protected void doFilterInternal(HttpServletRequest request,
-      HttpServletResponse response,
-      FilterChain filterChain)
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
       throws ServletException, IOException {
 
-    String authHeader = request.getHeader("Authorization");
+    // Extraer header Authorization
+    final String authorizationHeader = request.getHeader("Authorization");
 
-    // Validar que el header exista y tenga el prefijo "Bearer "
+    String dni = null;
+    String jwt = null;
 
-    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-      String token = authHeader.substring(7);
+    // Verificar si el header existe y comienza con "Bearer "
+    if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+      jwt = authorizationHeader.substring(7); // Extraer token (remover "Bearer ")
+      dni = jwtUtil.getDniFromToken(jwt); // Extraer username del token
+    }
 
-      if (jwtUtil.validateToken(token)) {
-        String username = jwtUtil.extractUsername(token);
-        String role = jwtUtil.extractRole(token);
+    // Si tenemos username y no hay autenticación actual...
+    if (dni != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-        // Convertir el rol en una autoridad de Spring Security
-        List<SimpleGrantedAuthority> authorities = Collections
-            .singletonList(new SimpleGrantedAuthority("ROLE_" + role));
+      // Cargar detalles del usuario desde la base de datos
+      UserDetails userDetails = this.userDetailsService.loadUserByUsername(dni);
 
-        // Crear el objeto de autenticación con el usuario y sus roles
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-            new User(username, "", authorities),
-            null,
-            authorities);
+      // Validar token JWT
+      if (jwtUtil.validateToken(jwt, userDetails)) {
+        // Crear objeto de autenticación para Spring Security
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+            userDetails,
+            null, // Credenciales (null porque JWT ya las validó)
+            userDetails.getAuthorities() // Permisos del usuario
+        );
 
-        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        // Agregar detalles de la petición web
+        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-        // Registrar el token de autenticación en el contexto de seguridad
-        // Esto permite que Spring Security evalúe reglas como hasAnyRole(...)
-        SecurityContextHolder.getContext().setAuthentication(authToken);
+        // Establecer autenticación en el contexto de seguridad
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
       }
     }
 
-    filterChain.doFilter(request, response);
+    // Continuar con la cadena de filtros
+    chain.doFilter(request, response);
   }
 }

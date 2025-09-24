@@ -12,20 +12,33 @@ import java.util.Optional;
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
 
+  // Buscar usuario por email
   Optional<Usuario> findByEmail(String email);
 
   // Verificar si existe email
   boolean existsByEmail(String email);
 
-  // Traer usuario con roles por email
+  // Buscar usuario con sus roles/perfiles
   @Query("SELECT u FROM Usuario u JOIN FETCH u.perfiles WHERE u.email = :email")
   Optional<Usuario> findByEmailWithRoles(@Param("email") String email);
+
+  // Buscar usuario con roles + permisos
+  @Query("""
+          SELECT DISTINCT u
+          FROM Usuario u
+          LEFT JOIN FETCH u.perfiles r
+          LEFT JOIN FETCH r.permisos p
+          WHERE u.email = :email
+      """)
+  Optional<Usuario> findByEmailWithRolesAndPermissions(@Param("email") String email);
 
   // Listar usuarios activos
   @Query("SELECT u FROM Usuario u WHERE u.estadoRegistro = true")
   List<Usuario> findAllActive();
 
+  // Buscar por DNI
   Optional<Usuario> findByDni(String dni);
 
+  // Verificar si existe DNI
   boolean existsByDni(String dni);
 }

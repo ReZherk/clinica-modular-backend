@@ -19,7 +19,14 @@ public class AuthController {
 
  @PostMapping("/login")
  public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto loginDto) {
-  LoginResponseDto response = authService.login(loginDto);
-  return ResponseEntity.ok(response);
+  try {
+   LoginResponseDto response = authService.login(loginDto);
+   return ResponseEntity.ok(response);
+  } catch (Exception e) {
+   return ResponseEntity.badRequest()
+     .body(new LoginResponseDto(false, "Error en login: " + e.getMessage()));
+  }
+
  }
+
 }
