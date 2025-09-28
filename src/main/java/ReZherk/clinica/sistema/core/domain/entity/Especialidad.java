@@ -26,4 +26,8 @@ public class Especialidad {
 
  @Column(name = "Tarifa", precision = 10, scale = 2)
  private BigDecimal tarifa;
+
+ @Column(name = "EstadoRegistro", nullable = false)
+ @Builder.Default
+ private Boolean estadoRegistro = true;
 }
