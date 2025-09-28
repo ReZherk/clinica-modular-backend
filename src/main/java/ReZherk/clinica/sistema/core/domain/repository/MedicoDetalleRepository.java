@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import ReZherk.clinica.sistema.core.domain.entity.Especialidad;
 import ReZherk.clinica.sistema.core.domain.entity.MedicoDetalle;
 
 import java.util.Optional;
@@ -24,4 +25,6 @@ public interface MedicoDetalleRepository extends JpaRepository<MedicoDetalle, In
 
   @Query("SELECT m FROM MedicoDetalle m JOIN FETCH m.especialidad WHERE m.especialidad.id = :idEspecialidad")
   List<MedicoDetalle> findByEspecialidadId(Integer idEspecialidad);
+
+  List<MedicoDetalle> findByEspecialidad(Especialidad especialidad);
 }

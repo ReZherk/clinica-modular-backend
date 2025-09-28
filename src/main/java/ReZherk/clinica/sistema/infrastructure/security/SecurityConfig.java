@@ -9,7 +9,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder; // 👈 lo importas y se inyecta solo
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -57,6 +57,18 @@ public class SecurityConfig {
             ).permitAll()
 
             // Endpoints restringidos
+            .requestMatchers(
+                "/api/admin/especialidad/all",
+                "/api/admin/especialidad/all/with-medicos",
+                "/api/admin/especialidad/*/medicos")
+            .hasAuthority("GLOBAL_READ")
+            .requestMatchers(
+                "/api/admin/especialidad/create",
+                "/api/admin/especialidad/*/activar",
+                "/api/admin/especialidad/*/desactivar",
+                "/api/admin/especialidad/*")
+            .hasAuthority("SPECIALITY_MANAGE")
+
             .requestMatchers("/api/admin/**").hasAuthority("ROLE_READ")
             .requestMatchers("/api/medico/**").hasAuthority("ADMIN_ACCESS")
 
