@@ -7,7 +7,8 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import ReZherk.clinica.sistema.core.domain.entity.Usuario;
+import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignAdminToUserRequestDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminBaseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.service.AdminService;
 
@@ -23,10 +24,15 @@ public class AdminController {
   return ResponseEntity.ok(adminService.listarAdministradores());
  }
 
+ @GetMapping("/{id}")
+ public ResponseEntity<AdminBaseDto> getAdminById(@PathVariable Integer id) {
+  return ResponseEntity.ok(adminService.obtenerAdminPorId(id));
+ }
+
  @PutMapping("/{id}")
  public ResponseEntity<AdminResponseDto> updateAdmin(
    @PathVariable Integer id,
-   @RequestBody Usuario data) {
+   @RequestBody AssignAdminToUserRequestDto data) {
   return ResponseEntity.ok(adminService.modificarAdministrador(id, data));
  }
 

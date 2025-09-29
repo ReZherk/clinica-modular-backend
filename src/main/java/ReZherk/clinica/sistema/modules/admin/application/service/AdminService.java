@@ -17,10 +17,13 @@ import ReZherk.clinica.sistema.core.domain.repository.RolPerfilRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
 import ReZherk.clinica.sistema.core.shared.utils.SecurityUtils;
+import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignAdminToUserRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.RegisterMedicoDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminBaseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.RegisterResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.AdminMapper;
+import ReZherk.clinica.sistema.modules.admin.application.mapper.AssignRoleMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.MedicoDetalleMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.MedicoMapper;
 import jakarta.persistence.EntityNotFoundException;
@@ -38,6 +41,7 @@ public class AdminService {
   private final UsuarioRepository usuarioRepository;
   private final MedicoDetalleMapper medicoDetalleMapper;
   private final MedicoDetalleRepository medicoDetalleRepository;
+  private final AssignRoleMapper assignRoleMapper;
 
   @Transactional
   public RegisterResponseDto registrarMedico(RegisterMedicoDto registerDto) {
@@ -85,13 +89,15 @@ public class AdminService {
         .collect(Collectors.toList());
   }
 
-  public AdminResponseDto modificarAdministrador(Integer id, Usuario datos) {
+  public AdminResponseDto modificarAdministrador(Integer id, AssignAdminToUserRequestDto dto) {
     Usuario usuario = usuarioRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Administrador no encontrado"));
 
-    usuario.setNombres(datos.getNombres());
-    usuario.setApellidos(datos.getApellidos());
-    usuario.setDni(datos.getDni());
+    usuario.setDni(dto.getDni());
+    usuario.setNombres(dto.getNombres());
+    usuario.setApellidos(dto.getApellidos());
+    usuario.setEmail(dto.getEmail());
+    usuario.setTelefono(dto.getTelefono());
 
     Usuario actualizado = usuarioRepository.save(usuario);
     return AdminMapper.toDTO(actualizado);
@@ -110,4 +116,14 @@ public class AdminService {
     usuario.setEstadoRegistro(false);
     return AdminMapper.toDTO(usuarioRepository.save(usuario));
   }
+
+  public AdminBaseDto obtenerAdminPorId(Integer id) {
+    Usuario usuario = usuarioRepository.findById(id)
+        .filter(u -> u.getPerfiles().stream()
+            .anyMatch(rol -> rol.getNombre().equalsIgnoreCase("ADMINISTRADOR")))
+        .orElseThrow(() -> new RuntimeException("Administrador no encontrado con id: " + id));
+
+    return assignRoleMapper.toAdminBaseDto(usuario);
+  }
+
 }
