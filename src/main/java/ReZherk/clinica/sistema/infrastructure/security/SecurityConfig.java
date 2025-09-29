@@ -62,7 +62,8 @@ public class SecurityConfig {
                 "/api/admin/especialidad/all/with-medicos",
                 "/api/admin/especialidad/*/medicos",
                 "/api/admin/roles/permissions",
-                "/api/admin/roles")
+                "/api/admin/roles",
+                "/api/admins")
             .hasAuthority("GLOBAL_READ")
             .requestMatchers(
                 "/api/admin/especialidad/create",
@@ -83,7 +84,10 @@ public class SecurityConfig {
             .hasAuthority("ROLE_ASSIGN")
 
             .requestMatchers(
-                "/api/admin/roles/create-admin")
+                "/api/admin/roles/create-admin",
+                "/api/admins/{id}",
+                "/api/admins/{id}/activate",
+                "/api/admins/{id}/deactivate")
             .hasAuthority("SUPER_ADMIN")
 
             // Todo lo demás requiere autenticación
