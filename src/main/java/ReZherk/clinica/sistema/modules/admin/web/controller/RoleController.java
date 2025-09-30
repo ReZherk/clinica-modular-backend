@@ -1,6 +1,5 @@
 package ReZherk.clinica.sistema.modules.admin.web.controller;
 
-import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignAdminToUserRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignRoleToUserRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.RoleRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.PermissionResponseDto;
@@ -34,18 +33,6 @@ public class RoleController {
 
     }
 
-  }
-
-  @PostMapping("/create-admin")
-  public ResponseEntity<String> createAdmin(@Validated @RequestBody AssignAdminToUserRequestDto dto) {
-    try {
-      roleService.createAdminUser(dto);
-      return ResponseEntity.status(HttpStatus.CREATED)
-          .body("Usuario administrador creado exitosamente");
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body("Error al crear administrador: " + e.getMessage());
-    }
   }
 
   @GetMapping("/permissions")

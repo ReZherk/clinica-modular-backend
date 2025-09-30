@@ -12,7 +12,7 @@ public class SpecialtyWithDoctorsResponseDto {
  private Integer id;
  private String nombreEspecialidad;
  private String descripcion;
- private List<DoctorDto> medicosActivos;
- private List<DoctorDto> medicosInactivos;
+ private List<MedicoDto> medicosActivos;
+ private List<MedicoDto> medicosInactivos;
 
 }

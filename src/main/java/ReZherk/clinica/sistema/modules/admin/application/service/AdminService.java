@@ -12,11 +12,12 @@ import ReZherk.clinica.sistema.core.application.dto.UsuarioBaseDto;
 import ReZherk.clinica.sistema.core.domain.entity.MedicoDetalle;
 import ReZherk.clinica.sistema.core.domain.entity.RolPerfil;
 import ReZherk.clinica.sistema.core.domain.entity.Usuario;
+import ReZherk.clinica.sistema.core.domain.entity.UsuarioPerfil;
 import ReZherk.clinica.sistema.core.domain.repository.MedicoDetalleRepository;
 import ReZherk.clinica.sistema.core.domain.repository.RolPerfilRepository;
+import ReZherk.clinica.sistema.core.domain.repository.UsuarioPerfilRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
-import ReZherk.clinica.sistema.core.shared.utils.SecurityUtils;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignAdminToUserRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.RegisterMedicoDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminBaseDto;
@@ -42,6 +43,7 @@ public class AdminService {
   private final MedicoDetalleMapper medicoDetalleMapper;
   private final MedicoDetalleRepository medicoDetalleRepository;
   private final AssignRoleMapper assignRoleMapper;
+  private final UsuarioPerfilRepository usuarioPerfilRepository;
 
   @Transactional
   public RegisterResponseDto registrarMedico(RegisterMedicoDto registerDto) {
@@ -60,15 +62,32 @@ public class AdminService {
 
   }
 
+  @Transactional
+  public void createAdminUser(AssignAdminToUserRequestDto dto) {
+
+    Usuario user = createUsuarioBase(dto);
+
+    Usuario savedUser = usuarioRepository.save(user);
+
+    RolPerfil adminRole = rolPerfilRepository.findByNombre("ADMINISTRADOR")
+        .orElseThrow(() -> new ResourceNotFoundException("Rol ADMINISTRADOR no encontrado"));
+
+    UsuarioPerfil link = UsuarioPerfil.builder()
+        .idUsuario(savedUser.getId())
+        .idPerfil(adminRole.getId())
+        .build();
+
+    usuarioPerfilRepository.save(link);
+  }
+
   private Usuario createUsuarioBase(UsuarioBaseDto dto) {
-    Usuario medico = medicoMapper.toEntity(dto);
+    Usuario user = assignRoleMapper.toEntity(dto);
 
-    String salt = SecurityUtils.generateSalt();
-    String hashedPassword = passwordEncoder.encode(dto.getPassword() + salt);
+    // BCrypt maneja internamente el salt, no necesitas generarlo
+    String hashedPassword = passwordEncoder.encode(dto.getPassword());
+    user.setPasswordHash(hashedPassword);
 
-    medico.setPasswordHash(hashedPassword);
-
-    return medico;
+    return user;
   }
 
   private void assignRoleToUser(Usuario usuario, String roleName) {

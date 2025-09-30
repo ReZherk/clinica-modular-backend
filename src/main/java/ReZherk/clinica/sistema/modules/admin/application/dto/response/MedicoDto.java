@@ -6,7 +6,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class DoctorDto {
+public class MedicoDto {
 
  private Integer idUsuario;
  private String nombres;

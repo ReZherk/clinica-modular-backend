@@ -13,7 +13,6 @@ import ReZherk.clinica.sistema.core.domain.repository.RolPerfilRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioPerfilRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
-import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignAdminToUserRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignRoleToUserRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.RoleRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.PermissionResponseDto;
@@ -62,24 +61,6 @@ public class RoleService {
     RolPerfil rolGuardado = rolPerfilRepository.save(rol);
 
     return roleMapper.toDto(rolGuardado);
-  }
-
-  @Transactional
-  public void createAdminUser(AssignAdminToUserRequestDto dto) {
-
-    Usuario user = createUsuarioBase(dto);
-
-    Usuario savedUser = usuarioRepository.save(user);
-
-    RolPerfil adminRole = rolPerfilRepository.findByNombre("ADMINISTRADOR")
-        .orElseThrow(() -> new ResourceNotFoundException("Rol ADMINISTRADOR no encontrado"));
-
-    UsuarioPerfil link = UsuarioPerfil.builder()
-        .idUsuario(savedUser.getId())
-        .idPerfil(adminRole.getId())
-        .build();
-
-    usuarioPerfilRepository.save(link);
   }
 
   @Transactional

@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import ReZherk.clinica.sistema.core.domain.entity.Especialidad;
 import ReZherk.clinica.sistema.core.domain.entity.MedicoDetalle;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.SpecialtyUpdateDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.response.DoctorDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtiesDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtyUpdateResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtyWithDoctorsResponseDto;
@@ -15,9 +15,9 @@ public class EspecialidadMapper {
 
   public static SpecialtyWithDoctorsResponseDto toDto(Especialidad especialidad, List<MedicoDetalle> medicos) {
 
-    List<DoctorDto> activos = medicos.stream()
+    List<MedicoDto> activos = medicos.stream()
         .filter(m -> Boolean.TRUE.equals(m.getUsuario().getEstadoRegistro()))
-        .map(m -> DoctorDto.builder()
+        .map(m -> MedicoDto.builder()
             .idUsuario(m.getUsuario().getId())
             .nombres(m.getUsuario().getNombres())
             .apellidos(m.getUsuario().getApellidos())
@@ -26,9 +26,9 @@ public class EspecialidadMapper {
             .build())
         .collect(Collectors.toList());
 
-    List<DoctorDto> inactivos = medicos.stream()
+    List<MedicoDto> inactivos = medicos.stream()
         .filter(m -> Boolean.FALSE.equals(m.getUsuario().getEstadoRegistro()))
-        .map(m -> DoctorDto.builder()
+        .map(m -> MedicoDto.builder()
             .idUsuario(m.getUsuario().getId())
             .nombres(m.getUsuario().getNombres())
             .apellidos(m.getUsuario().getApellidos())
