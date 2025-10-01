@@ -87,7 +87,8 @@ public class SecurityConfig {
                 "/api/admins/create-admin",
                 "/api/admins/{id}",
                 "/api/admins/{id}/activate",
-                "/api/admins/{id}/deactivate")
+                "/api/admins/{id}/deactivate",
+                "/api/admins/{id}/change-password")
             .hasAuthority("SUPER_ADMIN")
 
             // Todo lo demás requiere autenticación

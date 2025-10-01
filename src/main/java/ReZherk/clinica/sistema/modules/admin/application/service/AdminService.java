@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,9 +20,11 @@ import ReZherk.clinica.sistema.core.domain.repository.UsuarioPerfilRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignAdminToUserRequestDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePasswordRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.RegisterMedicoDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminBaseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.ChangePasswordResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.RegisterResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.AdminMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.AssignRoleMapper;
@@ -108,6 +111,7 @@ public class AdminService {
         .collect(Collectors.toList());
   }
 
+  @Transactional
   public AdminResponseDto modificarAdministrador(Integer id, AssignAdminToUserRequestDto dto) {
     Usuario usuario = usuarioRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Administrador no encontrado"));
@@ -120,6 +124,24 @@ public class AdminService {
 
     Usuario actualizado = usuarioRepository.save(usuario);
     return AdminMapper.toDTO(actualizado);
+  }
+
+  @Transactional
+  public ChangePasswordResponseDto cambiarPassword(Integer id, ChangePasswordRequestDto dto) {
+    Usuario usuario = usuarioRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Administrador no encontrado"));
+
+    if (!passwordEncoder.matches(dto.getPasswordCurrent(), usuario.getPasswordHash())) {
+      throw new BadCredentialsException("La contraseña actual es incorrecta");
+    }
+
+    String newPasswordHash = passwordEncoder.encode(dto.getNewPassword());
+    usuario.setPasswordHash(newPasswordHash);
+
+    usuarioRepository.save(usuario);
+
+    return new ChangePasswordResponseDto(usuario.getId(), "Contraseña actualizada correctamente");
+
   }
 
   public AdminResponseDto activarAdministrador(Integer id) {
