@@ -32,7 +32,6 @@ Sistema clínico modular desarrollado con Spring Boot que gestiona pacientes, m�
 ### Utilidades
 
 - **Lombok** - Reducción de código boilerplate
-- **MapStruct** - Mapeo entre objetos
 - **JJWT** - Tokens JWT
 - **SpringDoc OpenAPI** - Documentación API
 
