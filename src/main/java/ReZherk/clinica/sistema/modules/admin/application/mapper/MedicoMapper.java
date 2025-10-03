@@ -6,11 +6,13 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 import ReZherk.clinica.sistema.core.application.dto.UsuarioBaseDto;
+import ReZherk.clinica.sistema.core.domain.entity.MedicoDetalle;
 import ReZherk.clinica.sistema.core.domain.entity.TipoDocumento;
 import ReZherk.clinica.sistema.core.domain.entity.Usuario;
 import ReZherk.clinica.sistema.core.domain.repository.TipoDocumentoRepository;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicalCreationResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.RegisterResponseDto;
 import lombok.RequiredArgsConstructor;
 
@@ -59,6 +61,20 @@ public class MedicoMapper {
         .telefono(usuario.getTelefono())
         .estadoRegistro(usuario.getEstadoRegistro())
         .roles(rolesNames)
+        .build();
+  }
+
+  // Revisar
+
+  public static MedicoResponseDto toDto(Usuario usuario, MedicoDetalle detalle) {
+    return MedicoResponseDto.builder()
+        .id(usuario.getId())
+        .nombres(usuario.getNombres())
+        .apellidos(usuario.getApellidos())
+        .email(usuario.getEmail())
+        .telefono(usuario.getTelefono())
+        .estadoRegistro(usuario.getEstadoRegistro())
+        .cmp(detalle != null ? detalle.getCmp() : null)
         .build();
   }
 }

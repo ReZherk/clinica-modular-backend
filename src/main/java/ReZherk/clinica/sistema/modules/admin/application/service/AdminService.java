@@ -25,6 +25,8 @@ import ReZherk.clinica.sistema.modules.admin.application.dto.request.RegisterMed
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminBaseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.ChangePasswordResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoCountResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.RegisterResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.AdminMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.AssignRoleMapper;
@@ -165,6 +167,36 @@ public class AdminService {
         .orElseThrow(() -> new RuntimeException("Administrador no encontrado con id: " + id));
 
     return assignRoleMapper.toAdminBaseDto(usuario);
+  }
+
+  // Rvisar
+
+  public List<MedicoResponseDto> listarMedicos() {
+    return usuarioRepository.findAll().stream()
+        .filter(u -> u.getPerfiles().stream()
+            .anyMatch(p -> p.getNombre().equalsIgnoreCase("MEDICO")))
+        .map(u -> {
+          // si existe detalle, lo traemos
+          MedicoDetalle detalle = medicoDetalleRepository.findByIdUsuarioWithUsuario(u.getId())
+              .orElse(null);
+          return MedicoMapper.toDto(u, detalle);
+        })
+        .collect(Collectors.toList());
+  }
+
+  public MedicoCountResponseDto contarMedicosActivosInactivos() {
+    List<Usuario> medicos = usuarioRepository.findAll().stream()
+        .filter(u -> u.getPerfiles().stream()
+            .anyMatch(p -> p.getNombre().equalsIgnoreCase("MEDICO")))
+        .toList();
+
+    long activos = medicos.stream().filter(Usuario::getEstadoRegistro).count();
+    long inactivos = medicos.size() - activos;
+
+    return MedicoCountResponseDto.builder()
+        .activos(activos)
+        .inactivos(inactivos)
+        .build();
   }
 
 }
