@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.RegisterMedicoDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoCountResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.ApiResponse;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.RegisterResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.service.AdminService;
@@ -43,9 +44,9 @@ public class MedicoController {
 
  // Contar médicos activos e inactivos
  @GetMapping("/count")
- public ResponseEntity<MedicoCountResponseDto> tellDoctors() {
-  MedicoCountResponseDto conteo = adminService.contarMedicosActivosInactivos();
-  return ResponseEntity.ok(conteo);
+ public ResponseEntity<ApiResponse<CountResponse>> tellDoctors() {
+  CountResponse conteo = adminService.contarMedicosActivosInactivos();
+  return ResponseEntity.ok(new ApiResponse<>(true, "Cantidad de medicos activos e inactivos", conteo));
  }
 
 }

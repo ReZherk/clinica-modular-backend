@@ -13,6 +13,7 @@ import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignAdmin
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePasswordRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminBaseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.ApiResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.ChangePasswordResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.service.AdminService;
 
@@ -36,20 +37,26 @@ public class AdminController {
   }
 
   @GetMapping("/all")
-  public ResponseEntity<List<AdminResponseDto>> getAllAdmins() {
-    return ResponseEntity.ok(adminService.listarAdministradores());
+  public ResponseEntity<ApiResponse<List<AdminResponseDto>>> getAllAdmins() {
+    List<AdminResponseDto> allAdmins = adminService.listarAdministradores();
+    return ResponseEntity
+        .ok(new ApiResponse<>(true, "Se muestran los administradores activos e inactivos.", allAdmins));
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<AdminBaseDto> getAdminById(@PathVariable Integer id) {
-    return ResponseEntity.ok(adminService.obtenerAdminPorId(id));
+  public ResponseEntity<ApiResponse<AdminBaseDto>> getAdminById(@PathVariable Integer id) {
+    AdminBaseDto admin = adminService.obtenerAdminPorId(id);
+
+    return ResponseEntity.ok(new ApiResponse<>(true, "Se obtuvo satisfactoriamente el administrador", admin));
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<AdminResponseDto> updateAdmin(
+  public ResponseEntity<ApiResponse<AdminResponseDto>> updateAdmin(
       @PathVariable Integer id,
       @RequestBody AssignAdminToUserRequestDto data) {
-    return ResponseEntity.ok(adminService.modificarAdministrador(id, data));
+
+    AdminResponseDto update = adminService.modificarAdministrador(id, data);
+    return ResponseEntity.ok(new ApiResponse<>(true, "Se actualizo satisfactoriamente", update));
   }
 
   @PutMapping("/{id}/change-password")
@@ -60,12 +67,14 @@ public class AdminController {
   }
 
   @PatchMapping("/{id}/activate")
-  public ResponseEntity<AdminResponseDto> activateAdmin(@PathVariable Integer id) {
-    return ResponseEntity.ok(adminService.activarAdministrador(id));
+  public ResponseEntity<ApiResponse<AdminResponseDto>> activateAdmin(@PathVariable Integer id) {
+    AdminResponseDto activated = adminService.activarAdministrador(id);
+    return ResponseEntity.ok(new ApiResponse<>(true, "Se activo el usuario correctamente", activated));
   }
 
   @PatchMapping("/{id}/deactivate")
-  public ResponseEntity<AdminResponseDto> deactivateAdmin(@PathVariable Integer id) {
-    return ResponseEntity.ok(adminService.desactivarAdministrador(id));
+  public ResponseEntity<ApiResponse<AdminResponseDto>> deactivateAdmin(@PathVariable Integer id) {
+    AdminResponseDto disabled = adminService.desactivarAdministrador(id);
+    return ResponseEntity.ok(new ApiResponse<>(true, "Administrador desactivado", disabled));
   }
 }

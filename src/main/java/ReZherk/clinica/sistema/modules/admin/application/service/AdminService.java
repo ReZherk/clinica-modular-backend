@@ -25,7 +25,7 @@ import ReZherk.clinica.sistema.modules.admin.application.dto.request.RegisterMed
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminBaseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.ChangePasswordResponseDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoCountResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.RegisterResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.AdminMapper;
@@ -184,7 +184,7 @@ public class AdminService {
         .collect(Collectors.toList());
   }
 
-  public MedicoCountResponseDto contarMedicosActivosInactivos() {
+  public CountResponse contarMedicosActivosInactivos() {
     List<Usuario> medicos = usuarioRepository.findAll().stream()
         .filter(u -> u.getPerfiles().stream()
             .anyMatch(p -> p.getNombre().equalsIgnoreCase("MEDICO")))
@@ -193,7 +193,7 @@ public class AdminService {
     long activos = medicos.stream().filter(Usuario::getEstadoRegistro).count();
     long inactivos = medicos.size() - activos;
 
-    return MedicoCountResponseDto.builder()
+    return CountResponse.builder()
         .activos(activos)
         .inactivos(inactivos)
         .build();

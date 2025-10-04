@@ -10,6 +10,9 @@ public class AdminResponseDto {
  private Integer id;
  private String dni;
  private String nombreCompleto;
+ private String email;
+ private String telefono;
  private String rol;
  private Boolean estadoRegistro;
+
 }

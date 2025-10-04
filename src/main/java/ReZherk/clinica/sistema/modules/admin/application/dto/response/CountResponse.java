@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MedicoCountResponseDto {
+public class CountResponse {
  private long activos;
  private long inactivos;
 }
