@@ -25,15 +25,11 @@ public class AdminController {
   private final AdminService adminService;
 
   @PostMapping("/create-admin")
-  public ResponseEntity<String> createAdmin(@Validated @RequestBody AssignAdminToUserRequestDto dto) {
-    try {
-      adminService.createAdminUser(dto);
-      return ResponseEntity.status(HttpStatus.CREATED)
-          .body("Usuario administrador creado exitosamente");
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body("Error al crear administrador: " + e.getMessage());
-    }
+  public ResponseEntity<ApiResponse<Void>> createAdmin(@Validated @RequestBody AssignAdminToUserRequestDto dto) {
+    adminService.createAdminUser(dto);
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(new ApiResponse<>(true, "Usuario administrador creado exitosamente", null));
+
   }
 
   @GetMapping("/all")
