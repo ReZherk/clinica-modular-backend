@@ -11,10 +11,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import ReZherk.clinica.sistema.core.domain.entity.Usuario;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
-import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
 import ReZherk.clinica.sistema.infrastructure.security.JwtUtil;
 import ReZherk.clinica.sistema.modules.auth.application.dto.request.LoginRequestDto;
 import ReZherk.clinica.sistema.modules.auth.application.dto.response.LoginResponseDto;
+import jakarta.persistence.EntityNotFoundException;
+
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -31,9 +32,8 @@ public class AuthService {
         @Transactional(readOnly = true)
         public LoginResponseDto login(LoginRequestDto loginDto) {
                 Usuario usuario = usuarioRepository.findByDni(loginDto.getDni())
-                                .orElseThrow(
-                                                () -> new ResourceNotFoundException(
-                                                                "Usuario no encontrado con DNI: " + loginDto.getDni()));
+                                .orElseThrow(() -> new EntityNotFoundException(
+                                                "Usuario no encontrado con DNI: " + loginDto.getDni()));
 
                 Authentication authentication = authenticationManager.authenticate(
                                 new UsernamePasswordAuthenticationToken(
