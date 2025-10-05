@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import ReZherk.clinica.sistema.core.application.dto.ApiResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.RegisterMedicoDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.response.ApiResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.RegisterResponseDto;

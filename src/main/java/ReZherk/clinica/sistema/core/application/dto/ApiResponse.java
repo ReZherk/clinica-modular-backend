@@ -1,4 +1,4 @@
-package ReZherk.clinica.sistema.modules.admin.application.dto.response;
+package ReZherk.clinica.sistema.core.application.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

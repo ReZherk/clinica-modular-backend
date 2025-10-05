@@ -1,101 +1,82 @@
 package ReZherk.clinica.sistema.web.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.WebRequest;
 
+import ReZherk.clinica.sistema.core.application.dto.ApiResponse;
 import ReZherk.clinica.sistema.core.shared.exception.BusinessException;
-import ReZherk.clinica.sistema.core.shared.exception.ErrorResponse;
-import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
 import ReZherk.clinica.sistema.core.shared.exception.ValidationException;
+import jakarta.persistence.EntityNotFoundException;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.file.AccessDeniedException;
+import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+  // 1. Recurso no encontrado
+  @ExceptionHandler(EntityNotFoundException.class)
+  public ResponseEntity<ApiResponse<String>> handleEntityNotFound(EntityNotFoundException ex) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(new ApiResponse<>(false, "Recurso no encontrado", ex.getMessage()));
+  }
+
+  // 2. Argumentos inválidos
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ApiResponse<String>> handleIllegalArgument(IllegalArgumentException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(new ApiResponse<>(false, "Argumento inválido", ex.getMessage()));
+  }
+
+  // 3. Regla de negocio violada
   @ExceptionHandler(BusinessException.class)
-  public ResponseEntity<ErrorResponse> handleBusinessException(
-      BusinessException ex, WebRequest request) {
-
-    ErrorResponse errorResponse = ErrorResponse.builder()
-        .timestamp(LocalDateTime.now())
-        .status(HttpStatus.BAD_REQUEST.value())
-        .error("Business Error")
-        .message(ex.getMessage())
-        .path(request.getDescription(false).replace("uri=", ""))
-        .build();
-
-    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+  public ResponseEntity<ApiResponse<String>> handleBusiness(BusinessException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(new ApiResponse<>(false, "Error de negocio", ex.getMessage()));
   }
 
-  @ExceptionHandler(ResourceNotFoundException.class)
-  public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
-      ResourceNotFoundException ex, WebRequest request) {
-
-    ErrorResponse errorResponse = ErrorResponse.builder()
-        .timestamp(LocalDateTime.now())
-        .status(HttpStatus.NOT_FOUND.value())
-        .error("Resource Not Found")
-        .message(ex.getMessage())
-        .path(request.getDescription(false).replace("uri=", ""))
-        .build();
-
-    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
-  }
-
+  // 4. Validación manual
   @ExceptionHandler(ValidationException.class)
-  public ResponseEntity<ErrorResponse> handleValidationException(
-      ValidationException ex, WebRequest request) {
-
-    ErrorResponse errorResponse = ErrorResponse.builder()
-        .timestamp(LocalDateTime.now())
-        .status(HttpStatus.BAD_REQUEST.value())
-        .error("Validation Error")
-        .message(ex.getMessage())
-        .path(request.getDescription(false).replace("uri=", ""))
-        .validationErrors(ex.getErrors())
-        .build();
-
-    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+  public ResponseEntity<ApiResponse<String>> handleValidation(ValidationException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(new ApiResponse<>(false, "Error de validación", ex.getMessage()));
   }
 
+  // 5. Validación automática de @Valid en DTOs
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(
-      MethodArgumentNotValidException ex, WebRequest request) {
+  public ResponseEntity<ApiResponse<List<String>>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+    List<String> errores = ex.getBindingResult().getFieldErrors()
+        .stream()
+        .map(err -> err.getField() + ": " + err.getDefaultMessage())
+        .toList();
 
-    Map<String, String> errors = new HashMap<>();
-    ex.getBindingResult().getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
-
-    ErrorResponse errorResponse = ErrorResponse.builder()
-        .timestamp(LocalDateTime.now())
-        .status(HttpStatus.BAD_REQUEST.value())
-        .error("Validation Failed")
-        .message("Error en la validación de los datos")
-        .path(request.getDescription(false).replace("uri=", ""))
-        .validationErrors(errors)
-        .build();
-
-    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(new ApiResponse<>(false, "Errores de validación", errores));
   }
 
+  // 6. Restricciones de BD (duplicados, unique, FK)
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  public ResponseEntity<ApiResponse<String>> handleDataIntegrity(DataIntegrityViolationException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(new ApiResponse<>(false, "Error de integridad de datos",
+            ex.getMostSpecificCause().getMessage()));
+  }
+
+  // 7. Falta de permisos
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<ApiResponse<String>> handleAccessDenied(AccessDeniedException ex) {
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        .body(new ApiResponse<>(false, "Acceso denegado", ex.getMessage()));
+  }
+
+  // 8. Error inesperado (fallback)
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<ErrorResponse> handleGenericException(
-      Exception ex, WebRequest request) {
-
-    ErrorResponse errorResponse = ErrorResponse.builder()
-        .timestamp(LocalDateTime.now())
-        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-        .error("Internal Server Error")
-        .message("Ha ocurrido un error interno del servidor")
-        .path(request.getDescription(false).replace("uri=", ""))
-        .build();
-
-    return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+  public ResponseEntity<ApiResponse<String>> handleGeneral(Exception ex) {
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body(new ApiResponse<>(false, "Error inesperado", ex.getMessage()));
   }
 }
