@@ -14,7 +14,6 @@ import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignAdmin
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePasswordRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminBaseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminResponseDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.response.ChangePasswordResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.service.AdminService;
 
 @RestController
@@ -56,10 +55,13 @@ public class AdminController {
   }
 
   @PutMapping("/{id}/change-password")
-  public ResponseEntity<ChangePasswordResponseDto> changePassword(@PathVariable Integer id,
+  public ResponseEntity<ApiResponse<Void>> changePassword(@PathVariable Integer id,
       @RequestBody ChangePasswordRequestDto dto) {
 
-    return ResponseEntity.ok(adminService.cambiarPassword(id, dto));
+    adminService.cambiarPassword(id, dto);
+
+    return ResponseEntity.ok(
+        new ApiResponse<>(true, "Contraseña actualizada exitosamente", null));
   }
 
   @PatchMapping("/{id}/activate")

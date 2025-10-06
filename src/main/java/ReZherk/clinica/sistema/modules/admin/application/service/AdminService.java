@@ -24,7 +24,6 @@ import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePassw
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.RegisterMedicoDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminBaseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminResponseDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.response.ChangePasswordResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.RegisterResponseDto;
@@ -129,7 +128,7 @@ public class AdminService {
   }
 
   @Transactional
-  public ChangePasswordResponseDto cambiarPassword(Integer id, ChangePasswordRequestDto dto) {
+  public void cambiarPassword(Integer id, ChangePasswordRequestDto dto) {
     Usuario usuario = usuarioRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Administrador no encontrado"));
 
@@ -141,8 +140,6 @@ public class AdminService {
     usuario.setPasswordHash(newPasswordHash);
 
     usuarioRepository.save(usuario);
-
-    return new ChangePasswordResponseDto(usuario.getId(), "Contraseña actualizada correctamente");
 
   }
 

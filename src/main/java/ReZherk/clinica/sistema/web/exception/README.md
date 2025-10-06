@@ -183,6 +183,33 @@ Gracias a `@RestControllerAdvice`, podemos capturar excepciones lanzadas en el *
 
 ---
 
+### 9. BadCredentialsException
+
+- **Qué significa:** credenciales de autenticación incorrectas (usuario/contraseña inválidos).
+- **Status HTTP:** 401 Unauthorized.
+  Spring Security la lanza automáticamente.
+- **Cuándo se lanza:** cuando AuthenticationManager no puede autenticar al usuario.
+- **Ejemplo en Service:**
+
+```java
+// AuthenticationManager internamente lanza esta excepción
+Authentication authentication = authenticationManager.authenticate(
+new UsernamePasswordAuthenticationToken(
+loginDto.getDni(),
+loginDto.getPassword()));
+```
+
+- **En el GlobalExceptionHandler:**
+
+```java
+@ExceptionHandler(BadCredentialsException.class)
+public ResponseEntity<ApiResponse<String>> handleBadCredentials(BadCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+           .body(new ApiResponse<>(false, "Credenciales inválidas", "DNI o contraseña incorrectos"));
+}
+
+```
+
 ## 📌 Resumen rápido
 
 | Excepción                         | HTTP Status | Cuándo usar                            |
@@ -195,6 +222,7 @@ Gracias a `@RestControllerAdvice`, podemos capturar excepciones lanzadas en el *
 | `DataIntegrityViolationException` | 409         | Restricción de BD violada              |
 | `AccessDeniedException`           | 403         | Sin permisos                           |
 | `Exception`                       | 500         | Error inesperado                       |
+| `BadCredentialsException`         | 401         | Credenciales inválidas                 |
 
 ---
 
