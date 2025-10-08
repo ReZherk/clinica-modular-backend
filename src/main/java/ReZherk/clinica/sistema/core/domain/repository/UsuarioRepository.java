@@ -1,6 +1,9 @@
 package ReZherk.clinica.sistema.core.domain.repository;
 
 import ReZherk.clinica.sistema.core.domain.entity.Usuario;
+
+import org.springdoc.core.converters.models.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -41,4 +44,24 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
 
   // Verificar si existe DNI
   boolean existsByDni(String dni);
+
+  @Query("""
+          SELECT DISTINCT u FROM Usuario u
+          WHERE u.estadoRegistro = :estado
+          AND EXISTS (
+              SELECT 1 FROM RolPerfil r
+              WHERE r MEMBER OF u.perfiles
+              AND UPPER(r.nombre) = UPPER(:rol)
+          )
+          AND (
+              :search IS NULL OR :search = '' OR
+              LOWER(CONCAT(u.nombres, ' ', u.apellidos)) LIKE LOWER(CONCAT('%', :search, '%')) OR
+              u.dni LIKE CONCAT('%', :search, '%')
+          )
+      """)
+  Page<Usuario> findByEstadoAndRolAndSearch(
+      @Param("estado") Boolean estado,
+      @Param("rol") String rol,
+      @Param("search") String search,
+      Pageable pageable);
 }

@@ -33,7 +33,7 @@ public class AdminController {
 
   @GetMapping("/all")
   public ResponseEntity<ApiResponse<List<AdminResponseDto>>> getAllAdmins() {
-    List<AdminResponseDto> allAdmins = adminService.listarAdministradores();
+    List<AdminResponseDto> allAdmins = adminService.getAllAdministrators();
     return ResponseEntity
         .ok(new ApiResponse<>(true, "Se muestran los administradores activos e inactivos.", allAdmins));
   }

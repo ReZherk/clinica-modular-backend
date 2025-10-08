@@ -105,7 +105,7 @@ public class AdminService {
 
   // Apartir de qui esta bien,arriab debo modificar.
 
-  public List<AdminResponseDto> listarAdministradores() {
+  public List<AdminResponseDto> getAllAdministrators() {
     return usuarioRepository.findAll().stream()
         .filter(u -> u.getPerfiles().stream().anyMatch(p -> p.getNombre().equalsIgnoreCase("ADMINISTRADOR")))
         .map(AdminMapper::toDTO)
