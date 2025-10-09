@@ -13,7 +13,6 @@ public abstract class UsuarioBaseDto {
  private Integer tipoDocumentoId; // FK a TipoDocumento
 
  @NotBlank(message = "El DNI es obligatorio")
- @Pattern(regexp = "\\d{8}", message = "El DNI debe tener exactamente 8 dígitos")
  private String numeroDocumento;
 
  @NotBlank(message = "Los nombres son obligatorios")

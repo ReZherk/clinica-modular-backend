@@ -12,6 +12,7 @@ public class AdminMapper {
         .id(usuario.getId())
         .numeroDocumento(usuario.getNumeroDocumento())
         .nombreCompleto(usuario.getNombres() + " " + usuario.getApellidos())
+        .tipoDocumento(usuario.getTipoDocumento().getNombre())
         .email(usuario.getEmail())
         .telefono(usuario.getTelefono())
         .rol("ADMINISTRADOR")

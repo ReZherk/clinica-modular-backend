@@ -36,6 +36,7 @@ public class AssignRoleMapper {
     AdminBaseDto dto = new AdminBaseDto();
     dto.setTipoDocumentoId(usuario.getTipoDocumento().getId());
     dto.setNumeroDocumento(usuario.getNumeroDocumento());
+    dto.setTipoDocumentoId(usuario.getTipoDocumento().getId());
     dto.setNombres(usuario.getNombres());
     dto.setApellidos(usuario.getApellidos());
     dto.setEmail(usuario.getEmail());

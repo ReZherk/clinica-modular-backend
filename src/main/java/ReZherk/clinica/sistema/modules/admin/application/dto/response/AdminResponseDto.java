@@ -9,6 +9,7 @@ import lombok.*;
 public class AdminResponseDto {
  private Integer id;
  private String numeroDocumento;
+ private String tipoDocumento;
  private String nombreCompleto;
  private String email;
  private String telefono;

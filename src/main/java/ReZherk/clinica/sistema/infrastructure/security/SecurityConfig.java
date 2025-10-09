@@ -84,11 +84,12 @@ public class SecurityConfig {
 
             .requestMatchers(
                 "/api/admins/create-admin",
+                "/api/admins/activate",
+                "/api/admins/inactive",
                 "/api/admins/{id}",
-                "/api/admins/{id}/activate",
-                "/api/admins/{id}/deactivate",
                 "/api/admins/{id}/change-password",
-                "/api/admins/all")
+                "/api/admins/{id}/activate",
+                "/api/admins/{id}/deactivate")
             .hasAuthority("SUPER_ADMIN")
 
             // Todo lo demás requiere autenticación
