@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,11 +34,13 @@ import ReZherk.clinica.sistema.modules.admin.application.mapper.AssignRoleMapper
 import ReZherk.clinica.sistema.modules.admin.application.mapper.MedicoDetalleMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.MedicoMapper;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AdminService {
 
   private final MedicoValidator validator;
@@ -53,7 +57,7 @@ public class AdminService {
   public RegisterResponseDto registrarMedico(RegisterMedicoDto registerDto) {
     validator.validateEmailNotExists(registerDto.getEmail());
     validator.validateCmpNotExists(registerDto.getMedicoDetalle().getCmp());
-    validator.validateDniNotExists(registerDto.getDni());
+    validator.validateDniNotExists(registerDto.getNumeroDocumento());
 
     Usuario medico = createUsuarioBase(registerDto);
     assignRoleToUser(medico, "MEDICO");
@@ -105,11 +109,44 @@ public class AdminService {
 
   // Apartir de qui esta bien,arriab debo modificar.
 
-  public List<AdminResponseDto> getAllAdministrators() {
-    return usuarioRepository.findAll().stream()
-        .filter(u -> u.getPerfiles().stream().anyMatch(p -> p.getNombre().equalsIgnoreCase("ADMINISTRADOR")))
-        .map(AdminMapper::toDTO)
-        .collect(Collectors.toList());
+  @Transactional(readOnly = true)
+  public Page<AdminResponseDto> getActiveAdministrators(String search, Pageable pageable) {
+    log.info("Obteniendo administradores activos - Búsqueda: '{}', Página: {}, Tamaño: {}",
+        search != null ? search : "sin filtro", pageable.getPageNumber(), pageable.getPageSize());
+
+    try {
+      Page<AdminResponseDto> result = usuarioRepository
+          .findAdministradorsByEstadoAndSearch(true, "ADMINISTRADOR", search, pageable).map(u -> AdminMapper.toDTO(u));
+
+      log.info("Se encontraron {} administradores activos en total,mostrando {} registros", result.getTotalElements(),
+          result.getNumberOfElements());
+
+      return result;
+    } catch (Exception e) {
+      log.error("Error al obtener administradores activos con busqueda '{}'", search, e);
+      throw e;
+    }
+
+  }
+
+  @Transactional(readOnly = true)
+  public Page<AdminResponseDto> getInactiveAdministrators(String search, Pageable pageable) {
+
+    log.info("Obteniendo administradores inactivos - busqueda: '{}' , pagina: '{}' ,Tamaño: '{}'",
+        search != null ? search : "Sin filtros", pageable.getPageNumber(), pageable.getPageSize());
+
+    try {
+
+      Page<AdminResponseDto> result = usuarioRepository
+          .findAdministradorsByEstadoAndSearch(false, "ADMINISTRADOR", search, pageable).map(U -> AdminMapper.toDTO(U));
+      log.info("Se encontraron {} administradores inactivos en total, mostrando {} registros",
+          result.getTotalElements(), result.getNumberOfElements());
+      return result;
+    } catch (Exception e) {
+
+      log.error("Error al obtener administradores inactivos con busqueda: '{}'", search, e);
+      throw e;
+    }
   }
 
   @Transactional
@@ -117,7 +154,7 @@ public class AdminService {
     Usuario usuario = usuarioRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Administrador no encontrado"));
 
-    usuario.setDni(dto.getDni());
+    usuario.setNumeroDocumento(dto.getNumeroDocumento());
     usuario.setNombres(dto.getNombres());
     usuario.setApellidos(dto.getApellidos());
     usuario.setEmail(dto.getEmail());

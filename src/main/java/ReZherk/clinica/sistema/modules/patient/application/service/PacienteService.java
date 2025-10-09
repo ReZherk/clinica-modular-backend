@@ -35,7 +35,7 @@ public class PacienteService {
   public RegisterResponseDto registerPaciente(RegisterPacienteDto registerDto) {
 
     validateEmailNotExists(registerDto.getEmail());
-    validateDniNotExists(registerDto.getDni());
+    validateDniNotExists(registerDto.getNumeroDocumento());
 
     Usuario usuario = createUsuarioBase(registerDto);
     assignRoleToUser(usuario, "PACIENTE");
@@ -90,9 +90,9 @@ public class PacienteService {
     }
   }
 
-  private void validateDniNotExists(String dni) {
-    if (dni != null && usuarioRepository.existsByDni(dni)) {
-      throw new BusinessException("Ya existe un paciente con el DNI: " + dni);
+  private void validateDniNotExists(String numeroDocumento) {
+    if (numeroDocumento != null && usuarioRepository.existsByNumeroDocumento(numeroDocumento)) {
+      throw new BusinessException("Ya existe un paciente con el DNI: " + numeroDocumento);
     }
   }
 

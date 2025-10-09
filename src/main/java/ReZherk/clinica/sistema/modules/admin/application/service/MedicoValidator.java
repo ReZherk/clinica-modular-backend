@@ -24,9 +24,9 @@ public class MedicoValidator {
   }
  }
 
- public void validateDniNotExists(String dni) {
-  if (dni != null && usuarioRepository.existsByDni(dni)) {
-   throw new BusinessException("Ya existe un paciente con el DNI: " + dni);
+ public void validateDniNotExists(String numeroDocumento) {
+  if (numeroDocumento != null && usuarioRepository.existsByNumeroDocumento(numeroDocumento)) {
+   throw new BusinessException("Ya existe un paciente con el DNI: " + numeroDocumento);
   }
  }
 

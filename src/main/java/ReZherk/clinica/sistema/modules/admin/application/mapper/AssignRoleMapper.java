@@ -23,8 +23,7 @@ public class AssignRoleMapper {
     return Usuario.builder()
         .nombres(dto.getNombres())
         .apellidos(dto.getApellidos())
-        .dni(dto.getDni())
-        .fechaEmision(dto.getFechaEmision())
+        .numeroDocumento(dto.getNumeroDocumento())
         .tipoDocumento(tipoDocumento)
         .email(dto.getEmail())
         .telefono(dto.getTelefono())
@@ -36,8 +35,7 @@ public class AssignRoleMapper {
   public AdminBaseDto toAdminBaseDto(Usuario usuario) {
     AdminBaseDto dto = new AdminBaseDto();
     dto.setTipoDocumentoId(usuario.getTipoDocumento().getId());
-    dto.setDni(usuario.getDni());
-    dto.setFechaEmision(usuario.getFechaEmision());
+    dto.setNumeroDocumento(usuario.getNumeroDocumento());
     dto.setNombres(usuario.getNombres());
     dto.setApellidos(usuario.getApellidos());
     dto.setEmail(usuario.getEmail());

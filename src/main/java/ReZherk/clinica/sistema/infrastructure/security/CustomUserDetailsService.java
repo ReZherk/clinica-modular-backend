@@ -25,36 +25,37 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
- private final UsuarioRepository usuarioRepository;
+  private final UsuarioRepository usuarioRepository;
 
- /**
-  * Carga usuario por DNI y construye UserDetails para Spring Security
-  */
- @Override
- public UserDetails loadUserByUsername(String dni) throws UsernameNotFoundException {
-  // Buscar DNI en la base de datos
-  Usuario user = usuarioRepository.findByDni(dni)
-    .orElseThrow(() -> new UsernameNotFoundException("DNI no encontrado: " + dni));
+  /**
+   * Carga usuario por DNI y construye UserDetails para Spring Security
+   */
+  @Override
+  public UserDetails loadUserByUsername(String numeroDocumento) throws UsernameNotFoundException {
+    // Buscar DNI en la base de datos
+    Usuario user = usuarioRepository.findByNumeroDocumento(
+        numeroDocumento)
+        .orElseThrow(() -> new UsernameNotFoundException("DNI no encontrado: " + numeroDocumento));
 
-  // Construir objeto UserDetails que Spring Security entiende
-  return new org.springframework.security.core.userdetails.User(
-    user.getDni(), // dni de usuario
-    user.getPasswordHash(), // Contraseña encriptada
-    getAuthorities(user) // Permisos/autoridades del usuario
-  );
- }
+    // Construir objeto UserDetails que Spring Security entiende
+    return new org.springframework.security.core.userdetails.User(
+        user.getNumeroDocumento(), // dni de usuario
+        user.getPasswordHash(), // Contraseña encriptada
+        getAuthorities(user) // Permisos/autoridades del usuario
+    );
+  }
 
- /**
-  * Obtiene todos los permisos del usuario (de todos sus roles)
-  * 
-  * EJEMPLO: Si usuario tiene rol ADMIN con permisos [USER_READ, USER_WRITE]
-  * → Retorna [SimpleGrantedAuthority('USER_READ'),
-  * SimpleGrantedAuthority('USER_WRITE')]
-  */
- private Collection<? extends GrantedAuthority> getAuthorities(Usuario user) {
-  return user.getPerfiles().stream()
-    .flatMap(role -> role.getPermisos().stream()) // Aplanar todos los permisos de todos los roles
-    .map(permission -> new SimpleGrantedAuthority(permission.getActionKey())) // Convertir a formato Spring Security
-    .collect(Collectors.toSet()); // Eliminar duplicados
- }
+  /**
+   * Obtiene todos los permisos del usuario (de todos sus roles)
+   * 
+   * EJEMPLO: Si usuario tiene rol ADMIN con permisos [USER_READ, USER_WRITE]
+   * → Retorna [SimpleGrantedAuthority('USER_READ'),
+   * SimpleGrantedAuthority('USER_WRITE')]
+   */
+  private Collection<? extends GrantedAuthority> getAuthorities(Usuario user) {
+    return user.getPerfiles().stream()
+        .flatMap(role -> role.getPermisos().stream()) // Aplanar todos los permisos de todos los roles
+        .map(permission -> new SimpleGrantedAuthority(permission.getActionKey())) // Convertir a formato Spring Security
+        .collect(Collectors.toSet()); // Eliminar duplicados
+  }
 }

@@ -31,13 +31,13 @@ public class AuthService {
 
         @Transactional(readOnly = true)
         public LoginResponseDto login(LoginRequestDto loginDto) {
-                Usuario usuario = usuarioRepository.findByDni(loginDto.getDni())
+                Usuario usuario = usuarioRepository.findByNumeroDocumento(loginDto.getNumeroDocumento())
                                 .orElseThrow(() -> new EntityNotFoundException(
-                                                "Usuario no encontrado con DNI: " + loginDto.getDni()));
+                                                "Usuario no encontrado con DNI: " + loginDto.getNumeroDocumento()));
 
                 Authentication authentication = authenticationManager.authenticate(
                                 new UsernamePasswordAuthenticationToken(
-                                                loginDto.getDni(),
+                                                loginDto.getNumeroDocumento(),
                                                 loginDto.getPassword()));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);

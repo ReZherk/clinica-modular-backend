@@ -31,11 +31,8 @@ public class Usuario {
  @Column(name = "Apellidos", nullable = false, length = 100)
  private String apellidos;
 
- @Column(name = "DNI", columnDefinition = "CHAR(12)")
- private String dni;
-
- @Column(name = "Fecha_Emision")
- private java.time.LocalDate fechaEmision;
+ @Column(name = "NumeroDocumento", columnDefinition = "CHAR(12)")
+ private String numeroDocumento;
 
  @Column(name = "PasswordHash", nullable = false)
  private String passwordHash;

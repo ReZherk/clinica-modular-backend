@@ -2,8 +2,6 @@ package ReZherk.clinica.sistema.core.application.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -16,11 +14,7 @@ public abstract class UsuarioBaseDto {
 
  @NotBlank(message = "El DNI es obligatorio")
  @Pattern(regexp = "\\d{8}", message = "El DNI debe tener exactamente 8 dígitos")
- private String dni;
-
- @PastOrPresent(message = "La fecha de emisión no puede ser futura")
- @JsonFormat(pattern = "yyyy-MM-dd")
- private LocalDate fechaEmision;
+ private String numeroDocumento;
 
  @NotBlank(message = "Los nombres son obligatorios")
  @Size(max = 100, message = "Los nombres no pueden exceder 100 caracteres")

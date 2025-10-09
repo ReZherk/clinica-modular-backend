@@ -8,7 +8,7 @@ import lombok.*;
 @Builder
 public class AdminResponseDto {
  private Integer id;
- private String dni;
+ private String numeroDocumento;
  private String nombreCompleto;
  private String email;
  private String telefono;
