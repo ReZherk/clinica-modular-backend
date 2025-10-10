@@ -39,13 +39,15 @@ public class AdminController {
   @GetMapping("/active")
   public ResponseEntity<ApiResponse<Page<AdminResponseDto>>> getActiveAdmins(
       @RequestParam(required = false) String search,
+      @RequestParam(required = false, defaultValue = "documento") String searchType,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size,
       @RequestParam(defaultValue = "id") String sortBy,
       @RequestParam(defaultValue = "ASC") String sortDirection) {
 
-    log.info("GET /api/admins/active - search: '{}', page: {}, size: {}, sortBy: {}, sortDirection: {}",
-        search != null ? search : "sin filtro", page, size, sortBy, sortDirection);
+    log.info(
+        "GET /api/admins/active - search: '{}', searchType: '{}', page: {}, size: {}, sortBy: {}, sortDirection: {}",
+        search != null ? search : "sin filtro", searchType, page, size, sortBy, sortDirection);
 
     try {
       Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC")
@@ -54,7 +56,7 @@ public class AdminController {
 
       Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-      Page<AdminResponseDto> activeAdmins = adminService.getActiveAdministrators(search, pageable);
+      Page<AdminResponseDto> activeAdmins = adminService.getActiveAdministrators(search, searchType, pageable);
 
       log.info("Respuesta exitosa: {} administradores activos encontrados de {} totales",
           activeAdmins.getNumberOfElements(), activeAdmins.getTotalElements());
@@ -71,6 +73,7 @@ public class AdminController {
   @GetMapping("/inactive")
   public ResponseEntity<ApiResponse<Page<AdminResponseDto>>> getInactiveAdmins(
       @RequestParam(required = false) String search,
+      @RequestParam(required = false, defaultValue = "documento") String searchType,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size,
       @RequestParam(defaultValue = "id") String sortBy,
@@ -85,7 +88,7 @@ public class AdminController {
 
       Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-      Page<AdminResponseDto> inactiveAdmins = adminService.getInactiveAdministrators(search, pageable);
+      Page<AdminResponseDto> inactiveAdmins = adminService.getInactiveAdministrators(search, searchType, pageable);
 
       log.info("Respuesta exitosa: {} administradores inactivos encontrados de {} totales",
           inactiveAdmins.getNumberOfElements(), inactiveAdmins.getTotalElements());

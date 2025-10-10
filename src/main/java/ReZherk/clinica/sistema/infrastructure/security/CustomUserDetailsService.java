@@ -35,7 +35,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     // Buscar DNI en la base de datos
     Usuario user = usuarioRepository.findByNumeroDocumento(
         numeroDocumento)
-        .orElseThrow(() -> new UsernameNotFoundException("DNI no encontrado: " + numeroDocumento));
+        .orElseThrow(() -> new UsernameNotFoundException("Numero de documento no encontrado: " + numeroDocumento));
 
     // Construir objeto UserDetails que Spring Security entiende
     return new org.springframework.security.core.userdetails.User(

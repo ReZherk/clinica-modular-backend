@@ -55,13 +55,21 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
                 )
                 AND (
                     :search IS NULL OR :search = '' OR
-                    LOWER(CONCAT(u.nombres, ' ', u.apellidos)) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    u.numeroDocumento LIKE CONCAT('%', :search, '%')
+                    (
+                        CASE
+                            WHEN :searchType = 'documento' THEN u.numeroDocumento LIKE CONCAT('%', :search, '%')
+                            ELSE (
+                                LOWER(u.nombres) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                                LOWER(u.apellidos) LIKE LOWER(CONCAT('%', :search, '%'))
+                            )
+                        END
+                    ) = true
                 )
             """)
     Page<Usuario> findAdministradorsByEstadoAndSearch(
             @Param("estado") Boolean estado,
             @Param("rol") String rol,
             @Param("search") String search,
+            @Param("searchType") String searchType,
             Pageable pageable);
 }

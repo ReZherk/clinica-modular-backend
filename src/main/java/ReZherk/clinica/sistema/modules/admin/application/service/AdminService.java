@@ -110,13 +110,14 @@ public class AdminService {
   // Apartir de qui esta bien,arriab debo modificar.
 
   @Transactional(readOnly = true)
-  public Page<AdminResponseDto> getActiveAdministrators(String search, Pageable pageable) {
-    log.info("Obteniendo administradores activos - Búsqueda: '{}', Página: {}, Tamaño: {}",
-        search != null ? search : "sin filtro", pageable.getPageNumber(), pageable.getPageSize());
+  public Page<AdminResponseDto> getActiveAdministrators(String search, String searchType, Pageable pageable) {
+    log.info("Obteniendo administradores activos - Búsqueda: '{}', Tipo: '{}', Página: {}, Tamaño: {}",
+        search != null ? search : "sin filtro", searchType, pageable.getPageNumber(), pageable.getPageSize());
 
     try {
       Page<AdminResponseDto> result = usuarioRepository
-          .findAdministradorsByEstadoAndSearch(true, "ADMINISTRADOR", search, pageable).map(u -> AdminMapper.toDTO(u));
+          .findAdministradorsByEstadoAndSearch(true, "ADMINISTRADOR", search, searchType, pageable)
+          .map(u -> AdminMapper.toDTO(u));
 
       log.info("Se encontraron {} administradores activos en total,mostrando {} registros", result.getTotalElements(),
           result.getNumberOfElements());
@@ -130,7 +131,7 @@ public class AdminService {
   }
 
   @Transactional(readOnly = true)
-  public Page<AdminResponseDto> getInactiveAdministrators(String search, Pageable pageable) {
+  public Page<AdminResponseDto> getInactiveAdministrators(String search, String searchType, Pageable pageable) {
 
     log.info("Obteniendo administradores inactivos - busqueda: '{}' , pagina: '{}' ,Tamaño: '{}'",
         search != null ? search : "Sin filtros", pageable.getPageNumber(), pageable.getPageSize());
@@ -138,7 +139,9 @@ public class AdminService {
     try {
 
       Page<AdminResponseDto> result = usuarioRepository
-          .findAdministradorsByEstadoAndSearch(false, "ADMINISTRADOR", search, pageable).map(U -> AdminMapper.toDTO(U));
+          .findAdministradorsByEstadoAndSearch(false, "ADMINISTRADOR", search,
+              searchType, pageable)
+          .map(U -> AdminMapper.toDTO(U));
       log.info("Se encontraron {} administradores inactivos en total, mostrando {} registros",
           result.getTotalElements(), result.getNumberOfElements());
       return result;
