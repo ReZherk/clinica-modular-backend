@@ -15,6 +15,7 @@ import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignRoleToUserRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.RoleRequestDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.PermissionResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.RoleResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.AssignRoleMapper;
@@ -103,7 +104,13 @@ public class RoleService {
     try {
       Page<RoleResponseDto> result = rolPerfilRepository
           .findActiveRolesBySearch(true, search, pageable)
-          .map(rol -> roleMapper.toDto(rol));
+          .map(rol -> {
+            RoleResponseDto dto = roleMapper.toDto(rol);
+            CountResponse stats = contarActivosInactivos(rol.getNombre());
+            dto.setCantidad(stats);
+
+            return dto;
+          });
 
       log.info("Se encontraron {} roles activos en total, mostrando {} registros",
           result.getTotalElements(), result.getNumberOfElements());
@@ -123,7 +130,13 @@ public class RoleService {
     try {
       Page<RoleResponseDto> result = rolPerfilRepository
           .findActiveRolesBySearch(false, search, pageable)
-          .map(rol -> roleMapper.toDto(rol));
+          .map(rol -> {
+            RoleResponseDto dto = roleMapper.toDto(rol);
+            CountResponse stats = contarActivosInactivos(rol.getNombre());
+            dto.setCantidad(stats);
+
+            return dto;
+          });
 
       log.info("Se encontraron {} roles inactive en total, mostrando {} registros",
           result.getTotalElements(), result.getNumberOfElements());
@@ -183,6 +196,23 @@ public class RoleService {
     rolPerfilRepository.save(rol);
 
     return roleMapper.toDto(rol);
+  }
+
+  @Transactional
+  public CountResponse contarActivosInactivos(String rol) {
+    List<Usuario> roles = usuarioRepository.findAll().stream()
+        .filter(u -> u.getPerfiles().stream()
+            .anyMatch(p -> p.getNombre().equalsIgnoreCase(
+                rol)))
+        .toList();
+
+    long activos = roles.stream().filter(Usuario::getEstadoRegistro).count();
+    long inactivos = roles.size() - activos;
+
+    return CountResponse.builder()
+        .activos(activos)
+        .inactivos(inactivos)
+        .build();
   }
 
 }

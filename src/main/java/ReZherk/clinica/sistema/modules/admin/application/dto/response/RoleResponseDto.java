@@ -15,5 +15,6 @@ public class RoleResponseDto {
  private String descripcion;
  private Boolean estadoRegistro;
  private Set<PermissionDto> permisos;
+ private CountResponse cantidad;
 
 }
