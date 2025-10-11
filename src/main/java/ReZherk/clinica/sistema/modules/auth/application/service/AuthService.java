@@ -19,6 +19,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,6 +50,12 @@ public class AuthService {
                                 .map(rol -> rol.getNombre())
                                 .collect(Collectors.toList());
 
+                Set<String> permisos = usuario.getPerfiles().stream()
+                                .flatMap(perfil -> perfil.getPermisos().stream())
+                                .map(permiso -> permiso.getActionKey())
+                                .distinct()
+                                .collect(Collectors.toSet());
+
                 // Respuesto
                 return new LoginResponseDto(
                                 true,
@@ -58,6 +65,7 @@ public class AuthService {
                                 usuario.getApellidos(),
                                 usuario.getEmail(),
                                 roles,
+                                permisos,
                                 jwt);
 
         }

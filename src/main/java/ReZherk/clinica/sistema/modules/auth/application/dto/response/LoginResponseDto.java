@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -17,6 +18,7 @@ public class LoginResponseDto {
  private String apellidos;
  private String email;
  private List<String> roles; // Lista de roles asignados
+ private Set<String> permisos;
  private String token;
 
  public LoginResponseDto(boolean success, String message) {
