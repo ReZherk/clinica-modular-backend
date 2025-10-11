@@ -199,6 +199,14 @@ public class RoleService {
   }
 
   @Transactional
+  public RoleResponseDto getRole(Integer id) {
+    RolPerfil rol = rolPerfilRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado"));
+
+    return roleMapper.toDto(rol);
+  }
+
+  @Transactional
   public CountResponse contarActivosInactivos(String rol) {
     List<Usuario> roles = usuarioRepository.findAll().stream()
         .filter(u -> u.getPerfiles().stream()

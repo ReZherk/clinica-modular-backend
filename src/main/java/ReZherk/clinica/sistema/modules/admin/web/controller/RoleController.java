@@ -38,8 +38,9 @@ public class RoleController {
   }
 
   @GetMapping("/permissions")
-  public ResponseEntity<List<PermissionResponseDto>> getAllPermissions() {
-    return ResponseEntity.ok(roleService.getAllPermissions());
+  public ResponseEntity<ApiResponse<List<PermissionResponseDto>>> getAllPermissions() {
+    List<PermissionResponseDto> result = roleService.getAllPermissions();
+    return ResponseEntity.ok(new ApiResponse<>(true, "Se obtuvieron los permisos disponibles", result));
   }
 
   @GetMapping("/active")
@@ -115,23 +116,30 @@ public class RoleController {
   }
 
   @PatchMapping("/{id}/deactivate")
-  public ResponseEntity<RoleResponseDto> deactivateRole(@PathVariable Integer id) {
-
-    return ResponseEntity.ok(roleService.deactivateRole(id));
+  public ResponseEntity<ApiResponse<Void>> deactivateRole(@PathVariable Integer id) {
+    roleService.deactivateRole(id);
+    return ResponseEntity.ok(new ApiResponse<>(true, "Se desacivo exitosamente el rol", null));
   }
 
   @PatchMapping("/{id}/activate")
-  public ResponseEntity<RoleResponseDto> activateRole(@PathVariable Integer id) {
-
-    return ResponseEntity.ok(roleService.activateRole(id));
+  public ResponseEntity<ApiResponse<Void>> activateRole(@PathVariable Integer id) {
+    roleService.activateRole(id);
+    return ResponseEntity.ok(new ApiResponse<>(true, "Se activo exitosamente al rol solicitado", null));
   }
 
-  @PutMapping("/{id}")
-  public ResponseEntity<RoleResponseDto> updateRole(
+  @PutMapping("/{id}/update")
+  public ResponseEntity<ApiResponse<Void>> updateRole(
       @PathVariable Integer id,
       @Validated @RequestBody RoleRequestDto dto) {
+    roleService.updateRole(id, dto);
+    return ResponseEntity.ok(new ApiResponse<>(true, "Actualizacion exitosa", null));
+  }
 
-    return ResponseEntity.ok(roleService.updateRole(id, dto));
+  @GetMapping("/{id}/role")
+  public ResponseEntity<ApiResponse<RoleResponseDto>> getRole(
+      @PathVariable Integer id) {
+    RoleResponseDto result = roleService.getRole(id);
+    return ResponseEntity.ok(new ApiResponse<>(true, "Se obtubo el rol:" + result.getNombre(), result));
   }
 
 }

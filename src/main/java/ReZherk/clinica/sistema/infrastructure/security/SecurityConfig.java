@@ -60,9 +60,7 @@ public class SecurityConfig {
             .requestMatchers(
                 "/api/admin/especialidad/all",
                 "/api/admin/especialidad/all/with-medicos",
-                "/api/admin/especialidad/*/medicos",
-                "/api/admin/roles/permissions",
-                "/api/admin/roles")
+                "/api/admin/especialidad/*/medicos")
             .hasAuthority("GLOBAL_READ")
             .requestMatchers(
                 "/api/admin/especialidad/create",
@@ -73,14 +71,18 @@ public class SecurityConfig {
 
             .requestMatchers(
                 "/api/admin/roles/create",
-                "/api/admin/roles/{id}",
+                "/api/admin/roles/permissions",
+                "/api/admin/roles/activate",
+                "/api/admin/roles/inactive",
+                "/api/admin/roles/{id}/update",
+                "/api/admin/roles/{id}/role",
                 "/api/admin/roles/{id}/activate",
                 "/api/admin/roles/{id}/deactivate")
             .hasAuthority("ROLE_MANAGE")
 
             .requestMatchers(
                 "/api/admin/roles/assign")
-            .hasAuthority("ROLE_ASSIGN")
+            .hasAuthority("USER_MANAGE")
 
             .requestMatchers(
                 "/api/admins/create-admin",

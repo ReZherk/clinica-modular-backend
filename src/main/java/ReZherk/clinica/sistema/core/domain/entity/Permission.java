@@ -6,19 +6,6 @@ import lombok.AllArgsConstructor;
 
 import jakarta.persistence.*;
 
-/**
- * ENTIDAD PERMISO: Representa una acción específica en el sistema
- * 
- * EJEMPLOS DE PERMISOS USADOS EN ESTE PROYECTO:
- * - ROLE_READ: Consultar lista de roles
- * - ROLE_CREATE: Crear nuevos roles
- * - ROLE_ASSIGN: Asignar roles a usuarios
- * - MEDICO_REGISTER: Registrar médicos
- * - ESPECIALIDAD_REGISTER: Registrar especialidades
- * 
- * Estos permisos se utilizan en las anotaciones @PreAuthorize
- * para restringir el acceso a los endpoints según el rol del usuario.
- */
 @Entity
 @Table(name = "permissions")
 @Data
