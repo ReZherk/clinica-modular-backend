@@ -1,5 +1,6 @@
 package ReZherk.clinica.sistema.modules.admin.application.dto.response;
 
+import java.util.Set;
 import lombok.*;
 
 @Getter
@@ -9,16 +10,10 @@ import lombok.*;
 @Builder
 public class RoleResponseDto {
 
- private boolean success;
- private String message;
  private Integer id;
  private String nombre;
  private String descripcion;
  private Boolean estadoRegistro;
-
- public RoleResponseDto(boolean success, String message) {
-  this.success = success;
-  this.message = message;
- }
+ private Set<PermissionDto> permisos;
 
 }

@@ -112,7 +112,7 @@ public class AdminService {
   @Transactional(readOnly = true)
   public Page<AdminResponseDto> getActiveAdministrators(String search, String searchType, Pageable pageable) {
     log.info("Obteniendo administradores activos - Búsqueda: '{}', Tipo: '{}', Página: {}, Tamaño: {}",
-        search != null ? search : "sin filtro", searchType, pageable.getPageNumber(), pageable.getPageSize());
+        search != null ? search : "sin busqueda", searchType, pageable.getPageNumber(), pageable.getPageSize());
 
     try {
       Page<AdminResponseDto> result = usuarioRepository

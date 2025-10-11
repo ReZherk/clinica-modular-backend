@@ -21,8 +21,11 @@ import ReZherk.clinica.sistema.modules.admin.application.mapper.AssignRoleMapper
 import ReZherk.clinica.sistema.modules.admin.application.mapper.PermissionMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.RoleMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ReZherk.clinica.sistema.core.application.dto.UsuarioBaseDto;
 import ReZherk.clinica.sistema.core.domain.entity.Permission;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +33,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RoleService {
 
   private final RolPerfilRepository rolPerfilRepository;
@@ -91,8 +95,44 @@ public class RoleService {
     return user;
   }
 
-  public List<RoleResponseDto> getAllRoles() {
-    return roleMapper.toDtoList(rolPerfilRepository.findAll());
+  @Transactional(readOnly = true)
+  public Page<RoleResponseDto> getActiveRoles(String search, Pageable pageable) {
+    log.info("Obteniendo roles activos - Búsqueda: '{}', Página: {}, Tamaño: {}",
+        search != null ? search : "sin busqueda", pageable.getPageNumber(), pageable.getPageSize());
+
+    try {
+      Page<RoleResponseDto> result = rolPerfilRepository
+          .findActiveRolesBySearch(true, search, pageable)
+          .map(rol -> roleMapper.toDto(rol));
+
+      log.info("Se encontraron {} roles activos en total, mostrando {} registros",
+          result.getTotalElements(), result.getNumberOfElements());
+
+      return result;
+    } catch (Exception e) {
+      log.error("Error al obtener roles activos con búsqueda '{}'", search, e);
+      throw e;
+    }
+  }
+
+  @Transactional(readOnly = true)
+  public Page<RoleResponseDto> getInactiveRoles(String search, Pageable pageable) {
+    log.info("Obteniendo roles inactive - Búsqueda: '{}', Página: {}, Tamaño: {}",
+        search != null ? search : "sin busqueda", pageable.getPageNumber(), pageable.getPageSize());
+
+    try {
+      Page<RoleResponseDto> result = rolPerfilRepository
+          .findActiveRolesBySearch(false, search, pageable)
+          .map(rol -> roleMapper.toDto(rol));
+
+      log.info("Se encontraron {} roles inactive en total, mostrando {} registros",
+          result.getTotalElements(), result.getNumberOfElements());
+
+      return result;
+    } catch (Exception e) {
+      log.error("Error al obtener roles inactive con búsqueda '{}'", search, e);
+      throw e;
+    }
   }
 
   public List<PermissionResponseDto> getAllPermissions() {
