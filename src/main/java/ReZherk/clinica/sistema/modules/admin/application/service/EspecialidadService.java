@@ -65,8 +65,9 @@ public class EspecialidadService {
   }
 
   @Transactional(readOnly = true)
-  public List<SpecialtiesDto> listarEspecialidades() {
-    return especialidadRepository.findAllByOrderByNombreEspecialidad()
+  public List<SpecialtiesDto> listarEspecialidades(Boolean estado) {
+    return especialidadRepository.findByEstadoRegistroOrderByNombreEspecialidad(
+        estado)
         .stream()
         .map(EspecialidadMapper::toSimpleDto)
         .toList();

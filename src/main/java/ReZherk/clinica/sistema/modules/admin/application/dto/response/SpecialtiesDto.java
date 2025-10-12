@@ -1,5 +1,7 @@
 package ReZherk.clinica.sistema.modules.admin.application.dto.response;
 
+import java.math.BigDecimal;
+
 import lombok.*;
 
 @Data
@@ -11,5 +13,6 @@ public class SpecialtiesDto {
  private Integer id;
  private String nombreEspecialidad;
  private String descripcion;
+ private BigDecimal costo;
  private Boolean activo;
 }

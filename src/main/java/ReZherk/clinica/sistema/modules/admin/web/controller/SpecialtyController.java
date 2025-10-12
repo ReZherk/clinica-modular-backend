@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import ReZherk.clinica.sistema.core.application.dto.ApiResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.EspecialidadRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.SpecialtyUpdateDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtiesDto;
@@ -26,45 +27,54 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SpecialtyController {
 
- private final EspecialidadService especialidadService;
+  private final EspecialidadService especialidadService;
 
- @PostMapping("/create")
- public ResponseEntity<SpecialtyResponseDto> crearEspecialidad(@RequestBody EspecialidadRequestDto dto) {
-  SpecialtyResponseDto creada = especialidadService.crearEspecialidad(dto);
-  return new ResponseEntity<>(creada, HttpStatus.CREATED);
- }
+  @PostMapping("/create")
+  public ResponseEntity<SpecialtyResponseDto> crearEspecialidad(@RequestBody EspecialidadRequestDto dto) {
+    SpecialtyResponseDto creada = especialidadService.crearEspecialidad(dto);
+    return new ResponseEntity<>(creada, HttpStatus.CREATED);
+  }
 
- @GetMapping("/all")
- public ResponseEntity<List<SpecialtiesDto>> listarEspecialidades() {
-  return ResponseEntity.ok(especialidadService.listarEspecialidades());
- }
+  @GetMapping("/active")
+  public ResponseEntity<ApiResponse<List<SpecialtiesDto>>> listActiveSpecialties() {
 
- @GetMapping("/all/with-medicos")
- public ResponseEntity<List<SpecialtyWithDoctorsResponseDto>> listarEspecialidadesConMedicos() {
-  return ResponseEntity.ok(especialidadService.listarEspecialidadesConMedicos());
- }
+    List<SpecialtiesDto> result = especialidadService.listarEspecialidades(true);
+    return ResponseEntity.ok(new ApiResponse<>(true, "Se obtuvo exitosamente las especialidades activas", result));
+  }
 
- @GetMapping("/{id}/medicos")
- public ResponseEntity<SpecialtyWithDoctorsResponseDto> buscarMedicosPorEspecialidad(@PathVariable Integer id) {
-  return ResponseEntity.ok(especialidadService.buscarMedicosPorEspecialidad(id));
- }
+  @GetMapping("/inactive")
+  public ResponseEntity<ApiResponse<List<SpecialtiesDto>>> listInactiveSpecialties() {
 
- @PutMapping("/{id}/activar")
- public ResponseEntity<SpecialtyUpdateResponseDto> activar(@PathVariable Integer id) {
-  return ResponseEntity.ok(especialidadService.activar(id));
- }
+    List<SpecialtiesDto> result = especialidadService.listarEspecialidades(false);
+    return ResponseEntity.ok(new ApiResponse<>(true, "Se obtuvo exitosamente las especialidades Inactivas", result));
+  }
 
- @PutMapping("/{id}/desactivar")
- public ResponseEntity<Void> desactivarEspecialidad(@PathVariable Integer id) {
-  especialidadService.desactivarEspecialidad(id);
-  return ResponseEntity.noContent().build();
- }
+  @GetMapping("/all/with-medicos")
+  public ResponseEntity<List<SpecialtyWithDoctorsResponseDto>> listarEspecialidadesConMedicos() {
+    return ResponseEntity.ok(especialidadService.listarEspecialidadesConMedicos());
+  }
 
- @PutMapping("/{id}")
- public ResponseEntity<SpecialtyUpdateResponseDto> actualizarEspecialidad(
-   @PathVariable Integer id,
-   @RequestBody SpecialtyUpdateDto dto) {
-  return ResponseEntity.ok(especialidadService.actualizar(id, dto));
- }
+  @GetMapping("/{id}/medicos")
+  public ResponseEntity<SpecialtyWithDoctorsResponseDto> buscarMedicosPorEspecialidad(@PathVariable Integer id) {
+    return ResponseEntity.ok(especialidadService.buscarMedicosPorEspecialidad(id));
+  }
+
+  @PutMapping("/{id}/activar")
+  public ResponseEntity<SpecialtyUpdateResponseDto> activar(@PathVariable Integer id) {
+    return ResponseEntity.ok(especialidadService.activar(id));
+  }
+
+  @PutMapping("/{id}/desactivar")
+  public ResponseEntity<Void> desactivarEspecialidad(@PathVariable Integer id) {
+    especialidadService.desactivarEspecialidad(id);
+    return ResponseEntity.noContent().build();
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<SpecialtyUpdateResponseDto> actualizarEspecialidad(
+      @PathVariable Integer id,
+      @RequestBody SpecialtyUpdateDto dto) {
+    return ResponseEntity.ok(especialidadService.actualizar(id, dto));
+  }
 
 }

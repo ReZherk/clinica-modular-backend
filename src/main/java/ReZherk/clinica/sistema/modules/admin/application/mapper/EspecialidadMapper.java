@@ -51,6 +51,7 @@ public class EspecialidadMapper {
         .id(especialidad.getId())
         .nombreEspecialidad(especialidad.getNombreEspecialidad())
         .descripcion(especialidad.getDescripcion())
+        .costo(especialidad.getTarifa())
         .activo(especialidad.getEstadoRegistro())
         .build();
   }

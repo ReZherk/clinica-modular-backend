@@ -13,4 +13,6 @@ public interface EspecialidadRepository extends JpaRepository<Especialidad, Inte
  List<Especialidad> findAllByOrderByNombreEspecialidad();
 
  boolean existsByNombreEspecialidad(String nombreEspecialidad);
+
+ List<Especialidad> findByEstadoRegistroOrderByNombreEspecialidad(Boolean estadoRegistro);
 }
