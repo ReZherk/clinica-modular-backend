@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -172,9 +171,12 @@ public class AdminService {
     Usuario usuario = usuarioRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Administrador no encontrado"));
 
-    if (!passwordEncoder.matches(dto.getPasswordCurrent(), usuario.getPasswordHash())) {
-      throw new BadCredentialsException("La contraseña actual es incorrecta");
-    }
+    /*
+     * if (!passwordEncoder.matches(dto.getPasswordCurrent(),
+     * usuario.getPasswordHash())) {
+     * throw new BadCredentialsException("La contraseña actual es incorrecta");
+     * }
+     */
 
     String newPasswordHash = passwordEncoder.encode(dto.getNewPassword());
     usuario.setPasswordHash(newPasswordHash);
