@@ -1,16 +1,18 @@
 package ReZherk.clinica.sistema.modules.admin.application.dto.response;
 
-import lombok.Data;
+import java.math.BigDecimal;
+
+import lombok.*;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+
 public class SpecialtyResponseDto {
-
- private boolean success;
- private String message;
-
- public SpecialtyResponseDto(boolean success, String message) {
-  this.success = success;
-  this.message = message;
- }
-
+ private Integer id;
+ private String nombreEspecialidad;
+ private String descripcion;
+ private BigDecimal costo;
+ private Boolean activo;
 }

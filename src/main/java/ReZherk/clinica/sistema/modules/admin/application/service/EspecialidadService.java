@@ -6,11 +6,11 @@ import ReZherk.clinica.sistema.core.domain.repository.EspecialidadRepository;
 import ReZherk.clinica.sistema.core.domain.repository.MedicoDetalleRepository;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.EspecialidadRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.SpecialtyUpdateDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtiesDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtyResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtyUpdateResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtyWithDoctorsResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.EspecialidadMapper;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -27,7 +27,7 @@ public class EspecialidadService {
   private final MedicoDetalleRepository medicoDetalleRepository;
 
   @Transactional
-  public SpecialtyResponseDto crearEspecialidad(EspecialidadRequestDto dto) {
+  public void crearEspecialidad(EspecialidadRequestDto dto) {
     if (especialidadRepository.existsByNombreEspecialidad(dto.getNombreEspecialidad())) {
       throw new IllegalArgumentException("La especialidad '" + dto.getNombreEspecialidad() + "' ya existe.");
     }
@@ -39,7 +39,6 @@ public class EspecialidadService {
         .build();
     especialidadRepository.save(especialidad);
 
-    return new SpecialtyResponseDto(true, "La especialidad " + dto.getNombreEspecialidad() + " fue creada");
   }
 
   @Transactional(readOnly = true)
@@ -65,7 +64,7 @@ public class EspecialidadService {
   }
 
   @Transactional(readOnly = true)
-  public List<SpecialtiesDto> listarEspecialidades(Boolean estado) {
+  public List<SpecialtyResponseDto> listarEspecialidades(Boolean estado) {
     return especialidadRepository.findByEstadoRegistroOrderByNombreEspecialidad(
         estado)
         .stream()
@@ -103,6 +102,15 @@ public class EspecialidadService {
     Especialidad saved = especialidadRepository.save(especialidad);
 
     return EspecialidadMapper.toUpdateResponseDto(saved);
+  }
+
+  public SpecialtyResponseDto obtenerEspecialidadPorId(Integer id) {
+
+    Especialidad especialidad = especialidadRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Especialidad con ID " + id + " no encontrada"));
+
+    return EspecialidadMapper.toSimpleDto(especialidad);
+
   }
 
 }

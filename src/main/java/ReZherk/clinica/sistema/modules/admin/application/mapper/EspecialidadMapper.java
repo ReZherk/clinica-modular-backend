@@ -7,7 +7,7 @@ import ReZherk.clinica.sistema.core.domain.entity.Especialidad;
 import ReZherk.clinica.sistema.core.domain.entity.MedicoDetalle;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.SpecialtyUpdateDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtiesDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtyResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtyUpdateResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtyWithDoctorsResponseDto;
 
@@ -46,8 +46,8 @@ public class EspecialidadMapper {
         .build();
   }
 
-  public static SpecialtiesDto toSimpleDto(Especialidad especialidad) {
-    return SpecialtiesDto.builder()
+  public static SpecialtyResponseDto toSimpleDto(Especialidad especialidad) {
+    return SpecialtyResponseDto.builder()
         .id(especialidad.getId())
         .nombreEspecialidad(especialidad.getNombreEspecialidad())
         .descripcion(especialidad.getDescripcion())
