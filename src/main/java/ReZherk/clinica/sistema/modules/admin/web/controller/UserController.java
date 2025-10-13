@@ -1,13 +1,20 @@
 package ReZherk.clinica.sistema.modules.admin.web.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import ReZherk.clinica.sistema.core.application.dto.ApiResponse;
+import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignRoleToUserRequestDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.RoleResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.UserResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.service.RoleService;
 import ReZherk.clinica.sistema.modules.admin.application.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +31,7 @@ import org.springframework.data.domain.Sort;
 public class UserController {
 
  private final UserService userService;
+ private final RoleService roleService;
 
  @GetMapping("/active")
  public ResponseEntity<ApiResponse<Page<UserResponseDto>>> getActiveUser(
@@ -91,6 +99,35 @@ public class UserController {
    log.error("Error al obtener usuarios inactivos", e);
    return ResponseEntity.internalServerError()
      .body(new ApiResponse<>(false, "Error al obtener usuarios inactivos" + e.getMessage(), null));
+  }
+ }
+
+ @PostMapping("/assign")
+ public ResponseEntity<ApiResponse<Void>> assignRoleToUser(
+   @Validated @RequestBody AssignRoleToUserRequestDto dto) {
+  userService.assignRoleToUser(dto);
+
+  return ResponseEntity.status(HttpStatus.CREATED)
+    .body(new ApiResponse<>(true, "Usuario creado correctamente", null));
+ }
+
+ @GetMapping("/roles")
+ public ResponseEntity<ApiResponse<Page<RoleResponseDto>>> getActiveRolesForUserCreation() {
+  log.info("GET /api/user/active - sin filtros, para creación de usuario");
+
+  try {
+   Pageable pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "id"));
+
+   Page<RoleResponseDto> activeRoles = roleService.getActiveRoles(null, pageable);
+
+   log.info("Roles activos obtenidos: {} de {}", activeRoles.getNumberOfElements(), activeRoles.getTotalElements());
+
+   return ResponseEntity.ok(
+     new ApiResponse<>(true, "Roles activos obtenidos exitosamente.", activeRoles));
+  } catch (Exception e) {
+   log.error("Error al obtener roles activos", e);
+   return ResponseEntity.internalServerError()
+     .body(new ApiResponse<>(false, "Error al obtener roles activos: " + e.getMessage(), null));
   }
  }
 

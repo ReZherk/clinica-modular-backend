@@ -1,7 +1,6 @@
 package ReZherk.clinica.sistema.modules.admin.web.controller;
 
 import ReZherk.clinica.sistema.core.application.dto.ApiResponse;
-import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignRoleToUserRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.RoleRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.PermissionResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.RoleResponseDto;
@@ -105,14 +104,6 @@ public class RoleController {
       return ResponseEntity.internalServerError()
           .body(new ApiResponse<>(false, "Error al obtener roles inactive: " + e.getMessage(), null));
     }
-  }
-
-  @PostMapping("/assign")
-  public ResponseEntity<Void> assignRoleToUser(
-      @Validated @RequestBody AssignRoleToUserRequestDto dto) {
-    roleService.assignRoleToUser(dto);
-
-    return ResponseEntity.noContent().build();
   }
 
   @PatchMapping("/{id}/deactivate")

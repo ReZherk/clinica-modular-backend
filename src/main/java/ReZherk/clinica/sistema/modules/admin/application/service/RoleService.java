@@ -7,13 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ReZherk.clinica.sistema.core.domain.entity.RolPerfil;
 import ReZherk.clinica.sistema.core.domain.entity.Usuario;
-import ReZherk.clinica.sistema.core.domain.entity.UsuarioPerfil;
 import ReZherk.clinica.sistema.core.domain.repository.PermissionRepository;
 import ReZherk.clinica.sistema.core.domain.repository.RolPerfilRepository;
-import ReZherk.clinica.sistema.core.domain.repository.UsuarioPerfilRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
-import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignRoleToUserRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.RoleRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.PermissionResponseDto;
@@ -38,7 +35,6 @@ import java.util.Set;
 public class RoleService {
 
   private final RolPerfilRepository rolPerfilRepository;
-  private final UsuarioPerfilRepository usuarioPerfilRepository;
   private final RoleMapper roleMapper;
   private final AssignRoleMapper assignRoleMapper;
   private final PasswordEncoder passwordEncoder;
@@ -69,23 +65,6 @@ public class RoleService {
   }
 
   @Transactional
-  public void assignRoleToUser(AssignRoleToUserRequestDto dto) {
-
-    Usuario user = createUsuarioBase(dto);
-
-    Usuario savedUser = usuarioRepository.save(user);
-
-    RolPerfil rol = rolPerfilRepository.findById(dto.getIdRol())
-        .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado"));
-
-    UsuarioPerfil link = UsuarioPerfil.builder()
-        .idUsuario(savedUser.getId())
-        .idPerfil(rol.getId())
-        .build();
-
-    usuarioPerfilRepository.save(link);
-  }
-
   private Usuario createUsuarioBase(UsuarioBaseDto dto) {
     Usuario user = assignRoleMapper.toEntity(dto);
 
