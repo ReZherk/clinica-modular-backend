@@ -66,7 +66,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
                     ) = true
                 )
             """)
-    Page<Usuario> findAdministradorsByEstadoAndSearch(
+    Page<Usuario> findUserByEstadoAndSearch(
             @Param("estado") Boolean estado,
             @Param("rol") String rol,
             @Param("search") String search,

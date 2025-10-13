@@ -6,7 +6,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AdminResponseDto {
+public class UserResponseDto {
  private Integer id;
  private String numeroDocumento;
  private String tipoDocumento;

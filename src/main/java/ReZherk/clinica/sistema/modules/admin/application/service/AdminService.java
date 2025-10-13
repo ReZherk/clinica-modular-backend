@@ -24,7 +24,7 @@ import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignAdmin
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePasswordRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.RegisterMedicoDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminBaseDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.UserResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.RegisterResponseDto;
@@ -109,14 +109,14 @@ public class AdminService {
   // Apartir de qui esta bien,arriab debo modificar.
 
   @Transactional(readOnly = true)
-  public Page<AdminResponseDto> getActiveAdministrators(String search, String searchType, Pageable pageable) {
+  public Page<UserResponseDto> getActiveAdministrators(String search, String searchType, Pageable pageable) {
     log.info("Obteniendo administradores activos - Búsqueda: '{}', Tipo: '{}', Página: {}, Tamaño: {}",
         search != null ? search : "sin busqueda", searchType, pageable.getPageNumber(), pageable.getPageSize());
 
     try {
-      Page<AdminResponseDto> result = usuarioRepository
-          .findAdministradorsByEstadoAndSearch(true, "ADMINISTRADOR", search, searchType, pageable)
-          .map(u -> AdminMapper.toDTO(u));
+      Page<UserResponseDto> result = usuarioRepository
+          .findUserByEstadoAndSearch(true, "ADMINISTRADOR", search, searchType, pageable)
+          .map(u -> AdminMapper.toDTO(u, "ADMINISTRADOR"));
 
       log.info("Se encontraron {} administradores activos en total,mostrando {} registros", result.getTotalElements(),
           result.getNumberOfElements());
@@ -130,17 +130,17 @@ public class AdminService {
   }
 
   @Transactional(readOnly = true)
-  public Page<AdminResponseDto> getInactiveAdministrators(String search, String searchType, Pageable pageable) {
+  public Page<UserResponseDto> getInactiveAdministrators(String search, String searchType, Pageable pageable) {
 
     log.info("Obteniendo administradores inactivos - busqueda: '{}' , pagina: '{}' ,Tamaño: '{}'",
         search != null ? search : "Sin filtros", pageable.getPageNumber(), pageable.getPageSize());
 
     try {
 
-      Page<AdminResponseDto> result = usuarioRepository
-          .findAdministradorsByEstadoAndSearch(false, "ADMINISTRADOR", search,
+      Page<UserResponseDto> result = usuarioRepository
+          .findUserByEstadoAndSearch(false, "ADMINISTRADOR", search,
               searchType, pageable)
-          .map(U -> AdminMapper.toDTO(U));
+          .map(U -> AdminMapper.toDTO(U, "ADMINISTRADOR"));
       log.info("Se encontraron {} administradores inactivos en total, mostrando {} registros",
           result.getTotalElements(), result.getNumberOfElements());
       return result;
@@ -152,7 +152,7 @@ public class AdminService {
   }
 
   @Transactional
-  public AdminResponseDto modificarAdministrador(Integer id, AssignAdminToUserRequestDto dto) {
+  public UserResponseDto modificarAdministrador(Integer id, AssignAdminToUserRequestDto dto) {
     Usuario usuario = usuarioRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Administrador no encontrado"));
 
@@ -163,7 +163,7 @@ public class AdminService {
     usuario.setTelefono(dto.getTelefono());
 
     Usuario actualizado = usuarioRepository.save(usuario);
-    return AdminMapper.toDTO(actualizado);
+    return AdminMapper.toDTO(actualizado, "ADMINISTRADOR");
   }
 
   @Transactional
@@ -185,18 +185,18 @@ public class AdminService {
 
   }
 
-  public AdminResponseDto activarAdministrador(Integer id) {
+  public UserResponseDto activarAdministrador(Integer id) {
     Usuario usuario = usuarioRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Administrador no encontrado"));
     usuario.setEstadoRegistro(true);
-    return AdminMapper.toDTO(usuarioRepository.save(usuario));
+    return AdminMapper.toDTO(usuarioRepository.save(usuario), "ADMINISTRADOR");
   }
 
-  public AdminResponseDto desactivarAdministrador(Integer id) {
+  public UserResponseDto desactivarAdministrador(Integer id) {
     Usuario usuario = usuarioRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Administrador no encontrado"));
     usuario.setEstadoRegistro(false);
-    return AdminMapper.toDTO(usuarioRepository.save(usuario));
+    return AdminMapper.toDTO(usuarioRepository.save(usuario), "ADMINISTRADOR");
   }
 
   public AdminBaseDto obtenerAdminPorId(Integer id) {

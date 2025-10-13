@@ -17,7 +17,7 @@ import ReZherk.clinica.sistema.core.application.dto.ApiResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignAdminToUserRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePasswordRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminBaseDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.UserResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.service.AdminService;
 
 @RestController
@@ -37,7 +37,7 @@ public class AdminController {
   }
 
   @GetMapping("/active")
-  public ResponseEntity<ApiResponse<Page<AdminResponseDto>>> getActiveAdmins(
+  public ResponseEntity<ApiResponse<Page<UserResponseDto>>> getActiveAdmins(
       @RequestParam(required = false) String search,
       @RequestParam(required = false, defaultValue = "documento") String searchType,
       @RequestParam(defaultValue = "0") int page,
@@ -47,7 +47,7 @@ public class AdminController {
 
     log.info(
         "GET /api/admins/active - search: '{}', searchType: '{}', page: {}, size: {}, sortBy: {}, sortDirection: {}",
-        search != null ? search : "sin filtro", searchType, page, size, sortBy, sortDirection);
+        search != null ? search : "sin busqueda", searchType, page, size, sortBy, sortDirection);
 
     try {
       Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC")
@@ -56,7 +56,7 @@ public class AdminController {
 
       Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-      Page<AdminResponseDto> activeAdmins = adminService.getActiveAdministrators(search, searchType, pageable);
+      Page<UserResponseDto> activeAdmins = adminService.getActiveAdministrators(search, searchType, pageable);
 
       log.info("Respuesta exitosa: {} administradores activos encontrados de {} totales",
           activeAdmins.getNumberOfElements(), activeAdmins.getTotalElements());
@@ -71,7 +71,7 @@ public class AdminController {
   }
 
   @GetMapping("/inactive")
-  public ResponseEntity<ApiResponse<Page<AdminResponseDto>>> getInactiveAdmins(
+  public ResponseEntity<ApiResponse<Page<UserResponseDto>>> getInactiveAdmins(
       @RequestParam(required = false) String search,
       @RequestParam(required = false, defaultValue = "documento") String searchType,
       @RequestParam(defaultValue = "0") int page,
@@ -88,7 +88,7 @@ public class AdminController {
 
       Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-      Page<AdminResponseDto> inactiveAdmins = adminService.getInactiveAdministrators(search, searchType, pageable);
+      Page<UserResponseDto> inactiveAdmins = adminService.getInactiveAdministrators(search, searchType, pageable);
 
       log.info("Respuesta exitosa: {} administradores inactivos encontrados de {} totales",
           inactiveAdmins.getNumberOfElements(), inactiveAdmins.getTotalElements());
@@ -111,11 +111,11 @@ public class AdminController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<ApiResponse<AdminResponseDto>> updateAdmin(
+  public ResponseEntity<ApiResponse<UserResponseDto>> updateAdmin(
       @PathVariable Integer id,
       @RequestBody AssignAdminToUserRequestDto data) {
 
-    AdminResponseDto update = adminService.modificarAdministrador(id, data);
+    UserResponseDto update = adminService.modificarAdministrador(id, data);
     return ResponseEntity.ok(new ApiResponse<>(true, "Se actualizo satisfactoriamente", update));
   }
 
@@ -130,14 +130,14 @@ public class AdminController {
   }
 
   @PatchMapping("/{id}/activate")
-  public ResponseEntity<ApiResponse<AdminResponseDto>> activateAdmin(@PathVariable Integer id) {
-    AdminResponseDto activated = adminService.activarAdministrador(id);
+  public ResponseEntity<ApiResponse<UserResponseDto>> activateAdmin(@PathVariable Integer id) {
+    UserResponseDto activated = adminService.activarAdministrador(id);
     return ResponseEntity.ok(new ApiResponse<>(true, "Se activo el usuario correctamente", activated));
   }
 
   @PatchMapping("/{id}/deactivate")
-  public ResponseEntity<ApiResponse<AdminResponseDto>> deactivateAdmin(@PathVariable Integer id) {
-    AdminResponseDto disabled = adminService.desactivarAdministrador(id);
+  public ResponseEntity<ApiResponse<UserResponseDto>> deactivateAdmin(@PathVariable Integer id) {
+    UserResponseDto disabled = adminService.desactivarAdministrador(id);
     return ResponseEntity.ok(new ApiResponse<>(true, "Administrador desactivado", disabled));
   }
 }
