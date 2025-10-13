@@ -28,7 +28,7 @@ import ReZherk.clinica.sistema.modules.admin.application.dto.response.UserRespon
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.RegisterResponseDto;
-import ReZherk.clinica.sistema.modules.admin.application.mapper.AdminMapper;
+import ReZherk.clinica.sistema.modules.admin.application.mapper.UserMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.AssignRoleMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.MedicoDetalleMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.MedicoMapper;
@@ -116,7 +116,7 @@ public class AdminService {
     try {
       Page<UserResponseDto> result = usuarioRepository
           .findUserByEstadoAndSearch(true, "ADMINISTRADOR", search, searchType, pageable)
-          .map(u -> AdminMapper.toDTO(u, "ADMINISTRADOR"));
+          .map(u -> UserMapper.toDTO(u, "ADMINISTRADOR"));
 
       log.info("Se encontraron {} administradores activos en total,mostrando {} registros", result.getTotalElements(),
           result.getNumberOfElements());
@@ -140,7 +140,7 @@ public class AdminService {
       Page<UserResponseDto> result = usuarioRepository
           .findUserByEstadoAndSearch(false, "ADMINISTRADOR", search,
               searchType, pageable)
-          .map(U -> AdminMapper.toDTO(U, "ADMINISTRADOR"));
+          .map(U -> UserMapper.toDTO(U, "ADMINISTRADOR"));
       log.info("Se encontraron {} administradores inactivos en total, mostrando {} registros",
           result.getTotalElements(), result.getNumberOfElements());
       return result;
@@ -163,7 +163,7 @@ public class AdminService {
     usuario.setTelefono(dto.getTelefono());
 
     Usuario actualizado = usuarioRepository.save(usuario);
-    return AdminMapper.toDTO(actualizado, "ADMINISTRADOR");
+    return UserMapper.toDTO(actualizado, "ADMINISTRADOR");
   }
 
   @Transactional
@@ -189,14 +189,14 @@ public class AdminService {
     Usuario usuario = usuarioRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Administrador no encontrado"));
     usuario.setEstadoRegistro(true);
-    return AdminMapper.toDTO(usuarioRepository.save(usuario), "ADMINISTRADOR");
+    return UserMapper.toDTO(usuarioRepository.save(usuario), "ADMINISTRADOR");
   }
 
   public UserResponseDto desactivarAdministrador(Integer id) {
     Usuario usuario = usuarioRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Administrador no encontrado"));
     usuario.setEstadoRegistro(false);
-    return AdminMapper.toDTO(usuarioRepository.save(usuario), "ADMINISTRADOR");
+    return UserMapper.toDTO(usuarioRepository.save(usuario), "ADMINISTRADOR");
   }
 
   public AdminBaseDto obtenerAdminPorId(Integer id) {

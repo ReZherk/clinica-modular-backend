@@ -6,7 +6,7 @@ import ReZherk.clinica.sistema.core.domain.entity.Usuario;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.UserResponseDto;
 
 @Component
-public class AdminMapper {
+public class UserMapper {
   public static UserResponseDto toDTO(Usuario usuario, String rol) {
     return UserResponseDto.builder()
         .id(usuario.getId())

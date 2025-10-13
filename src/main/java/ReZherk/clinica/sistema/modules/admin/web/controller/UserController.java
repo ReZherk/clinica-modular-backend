@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -150,6 +151,18 @@ public class UserController {
 
   return ResponseEntity.ok(
     new ApiResponse<>(true, "Contraseña actualizada exitosamente", null));
+ }
+
+ @PatchMapping("/{id}/activate")
+ public ResponseEntity<ApiResponse<UserResponseDto>> activateAdmin(@PathVariable Integer id) {
+  UserResponseDto activated = userService.activeUser(id);
+  return ResponseEntity.ok(new ApiResponse<>(true, "Se activo el usuario correctamente", activated));
+ }
+
+ @PatchMapping("/{id}/deactivate")
+ public ResponseEntity<ApiResponse<UserResponseDto>> deactivateAdmin(@PathVariable Integer id) {
+  UserResponseDto disabled = userService.desactiveUser(id);
+  return ResponseEntity.ok(new ApiResponse<>(true, "Administrador desactivado", disabled));
  }
 
 }

@@ -18,7 +18,7 @@ import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignRoleT
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePasswordRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.UserResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.UsuarioWithRoleResponse;
-import ReZherk.clinica.sistema.modules.admin.application.mapper.AdminMapper;
+import ReZherk.clinica.sistema.modules.admin.application.mapper.UserMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.AssignRoleMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +48,7 @@ public class UserService {
   try {
    Page<UserResponseDto> result = usuarioRepository
      .findUserByEstadoAndSearch(true, rol, search, searchType, pageable)
-     .map(u -> AdminMapper.toDTO(u, rol));
+     .map(u -> UserMapper.toDTO(u, rol));
 
    log.info("Se encontraron {} usuarios activos en total,mostrando {} registros", result.getTotalElements(),
      result.getNumberOfElements());
@@ -72,7 +72,7 @@ public class UserService {
    Page<UserResponseDto> result = usuarioRepository
      .findUserByEstadoAndSearch(false, rol, search,
        searchType, pageable)
-     .map(U -> AdminMapper.toDTO(U, rol));
+     .map(U -> UserMapper.toDTO(U, rol));
    log.info("Se encontraron {} usuarios inactivos en total, mostrando {} registros",
      result.getTotalElements(), result.getNumberOfElements());
    return result;
@@ -139,6 +139,32 @@ public class UserService {
 
   usuarioRepository.save(usuario);
 
+ }
+
+ @Transactional
+ public UserResponseDto activeUser(Integer id) {
+  Usuario usuario = usuarioRepository.findById(id)
+    .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+  usuario.setEstadoRegistro(true);
+  Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+  UsuarioWithRoleResponse usuarioConRol = obtenerUsuarioPorId(usuarioGuardado.getId());
+
+  return UserMapper.toDTO(usuarioGuardado, usuarioConRol.getRolActual());
+ }
+
+ @Transactional
+ public UserResponseDto desactiveUser(Integer id) {
+  Usuario usuario = usuarioRepository.findById(id)
+    .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+  usuario.setEstadoRegistro(false);
+  Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+  UsuarioWithRoleResponse usuarioConRol = obtenerUsuarioPorId(usuarioGuardado.getId());
+
+  return UserMapper.toDTO(usuarioGuardado, usuarioConRol.getRolActual());
  }
 
 }
