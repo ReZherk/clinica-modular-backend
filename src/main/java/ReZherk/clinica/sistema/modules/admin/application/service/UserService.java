@@ -46,4 +46,26 @@ public class UserService {
 
  }
 
+ @Transactional(readOnly = true)
+ public Page<UserResponseDto> getInactiveUser(String search, String searchType, Pageable pageable, String rol) {
+
+  log.info("Obteniendo usuarios inactivos - busqueda: '{}' , pagina: '{}' ,Tamaño: '{}'",
+    search != null ? search : "Sin busqueda", pageable.getPageNumber(), pageable.getPageSize());
+
+  try {
+
+   Page<UserResponseDto> result = usuarioRepository
+     .findUserByEstadoAndSearch(false, rol, search,
+       searchType, pageable)
+     .map(U -> AdminMapper.toDTO(U, rol));
+   log.info("Se encontraron {} usuarios inactivos en total, mostrando {} registros",
+     result.getTotalElements(), result.getNumberOfElements());
+   return result;
+  } catch (Exception e) {
+
+   log.error("Error al obtener usuarios inactivos con busqueda: '{}'", search, e);
+   throw e;
+  }
+ }
+
 }
