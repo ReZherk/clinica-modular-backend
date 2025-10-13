@@ -58,15 +58,16 @@ public class SecurityConfig {
 
             // Endpoints restringidos
             .requestMatchers(
-                "/api/admin/especialidad/all",
                 "/api/admin/especialidad/all/with-medicos",
                 "/api/admin/especialidad/*/medicos")
             .hasAuthority("GLOBAL_READ")
             .requestMatchers(
                 "/api/admin/especialidad/create",
-                "/api/admin/especialidad/*/activar",
-                "/api/admin/especialidad/*/desactivar",
-                "/api/admin/especialidad/*")
+                "/api/admin/especialidad/active",
+                "/api/admin/especialidad/inactive",
+                "/api/admin/especialidad/{id}/activate",
+                "/api/admin/especialidad/{id}/deactivate",
+                "/api/admin/especialidad/{id}")
             .hasAuthority("SPECIALITY_MANAGE")
 
             .requestMatchers(

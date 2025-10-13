@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -49,13 +50,13 @@ public class SpecialtyController {
     return ResponseEntity.ok(new ApiResponse<>(true, "Se obtuvo exitosamente las especialidades Inactivas", result));
   }
 
-  @PutMapping("/{id}/activar")
+  @PatchMapping("/{id}/activate")
   public ResponseEntity<ApiResponse<Void>> activarEspecialidad(@PathVariable Integer id) {
     especialidadService.activar(id);
     return ResponseEntity.ok(new ApiResponse<>(true, "Se activo la especialidad", null));
   }
 
-  @PutMapping("/{id}/desactivar")
+  @PatchMapping("/{id}/deactivate")
   public ResponseEntity<ApiResponse<Void>> desactivarEspecialidad(@PathVariable Integer id) {
     especialidadService.desactivarEspecialidad(id);
     return ResponseEntity.ok(new ApiResponse<>(true, "Se desactivo la especialidad", null));
