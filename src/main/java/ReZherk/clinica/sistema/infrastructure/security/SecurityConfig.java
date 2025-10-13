@@ -82,7 +82,14 @@ public class SecurityConfig {
             .hasAuthority("ROLE_MANAGE")
 
             .requestMatchers(
-                "/api/admin/roles/assign")
+                "/api/admin/user/active",
+                "/api/admin/user/inactive",
+                "/api/admin/user/assign",
+                "/api/admin/user/roles",
+                "/api/admin/user/{id}",
+                "/api/admin/user/{id}/change-password",
+                "/api/admin/user/{id}/activate",
+                "/api/admin/user/{id}/deactivate")
             .hasAuthority("USER_MANAGE")
 
             .requestMatchers(
