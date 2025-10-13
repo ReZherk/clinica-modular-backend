@@ -15,9 +15,12 @@ import ReZherk.clinica.sistema.core.domain.repository.UsuarioPerfilRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignRoleToUserRequestDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePasswordRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.UserResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.UsuarioWithRoleResponse;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.AdminMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.AssignRoleMapper;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -107,6 +110,35 @@ public class UserService {
   user.setPasswordHash(hashedPassword);
 
   return user;
+ }
+
+ public UsuarioWithRoleResponse obtenerUsuarioPorId(Integer id) {
+  Usuario usuario = usuarioRepository.findById(id)
+    .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+
+  String rolActual = usuario.getPerfiles().stream()
+    .map(RolPerfil::getNombre)
+    .findFirst()
+    .orElse("SIN ROL");
+
+  UsuarioBaseDto dto = assignRoleMapper.toUserBaseDto(usuario);
+
+  return UsuarioWithRoleResponse.builder()
+    .usuario(dto)
+    .rolActual(rolActual)
+    .build();
+ }
+
+ @Transactional
+ public void cambiarPassword(Integer id, ChangePasswordRequestDto dto) {
+  Usuario usuario = usuarioRepository.findById(id)
+    .orElseThrow(() -> new EntityNotFoundException("Administrador no encontrado"));
+
+  String newPasswordHash = passwordEncoder.encode(dto.getNewPassword());
+  usuario.setPasswordHash(newPasswordHash);
+
+  usuarioRepository.save(usuario);
+
  }
 
 }

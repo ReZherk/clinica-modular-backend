@@ -205,7 +205,7 @@ public class AdminService {
             .anyMatch(rol -> rol.getNombre().equalsIgnoreCase("ADMINISTRADOR")))
         .orElseThrow(() -> new RuntimeException("Administrador no encontrado con id: " + id));
 
-    return assignRoleMapper.toAdminBaseDto(usuario);
+    return assignRoleMapper.toUserBaseDto(usuario);
   }
 
   // Rvisar

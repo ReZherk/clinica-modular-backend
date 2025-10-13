@@ -32,7 +32,7 @@ public class AssignRoleMapper {
   }
 
   // Entity -> DTO (para traer info al frontend)
-  public AdminBaseDto toAdminBaseDto(Usuario usuario) {
+  public AdminBaseDto toUserBaseDto(Usuario usuario) {
     AdminBaseDto dto = new AdminBaseDto();
     dto.setTipoDocumentoId(usuario.getTipoDocumento().getId());
     dto.setNumeroDocumento(usuario.getNumeroDocumento());
