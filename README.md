@@ -157,7 +157,7 @@ export JWT_SECRET=clave-secreta-segura-production
 2. Crear una rama para la feature (`git checkout -b feature/AmazingFeature`)
 3. Commit de los cambios (`git commit -m 'Add AmazingFeature'`)
 4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir un Pull Request
+5. Abrir un Pull Request.
 
 ## 📄 Licencia
 
