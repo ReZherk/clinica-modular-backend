@@ -33,5 +33,5 @@ public class Especialidad {
 
  @Column(name = "Duracion", nullable = false)
  @Builder.Default
- private Byte Duracion = 30;
+ private Byte duracion = 30;
 }

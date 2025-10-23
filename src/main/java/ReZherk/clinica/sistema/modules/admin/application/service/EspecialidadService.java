@@ -36,6 +36,7 @@ public class EspecialidadService {
         .nombreEspecialidad(dto.getNombreEspecialidad())
         .descripcion(dto.getDescripcion())
         .tarifa(dto.getTarifa())
+        .duracion(dto.getDuracion())
         .build();
     especialidadRepository.save(especialidad);
 

@@ -20,6 +20,7 @@ import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtyR
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtyUpdateResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtyWithDoctorsResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.service.EspecialidadService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -30,7 +31,7 @@ public class SpecialtyController {
   private final EspecialidadService especialidadService;
 
   @PostMapping("/create")
-  public ResponseEntity<ApiResponse<Void>> crearEspecialidad(@RequestBody EspecialidadRequestDto dto) {
+  public ResponseEntity<ApiResponse<Void>> crearEspecialidad(@Valid @RequestBody EspecialidadRequestDto dto) {
     especialidadService.crearEspecialidad(dto);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(new ApiResponse<>(true, "Se creo la especialidad exitosamente.", null));

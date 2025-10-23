@@ -15,4 +15,5 @@ public class SpecialtyResponseDto {
  private String descripcion;
  private BigDecimal costo;
  private Boolean activo;
+ private Byte duracion;
 }
