@@ -30,4 +30,8 @@ public class Especialidad {
  @Column(name = "EstadoRegistro", nullable = false)
  @Builder.Default
  private Boolean estadoRegistro = true;
+
+ @Column(name = "Duracion", nullable = false)
+ @Builder.Default
+ private Byte Duracion = 30;
 }
