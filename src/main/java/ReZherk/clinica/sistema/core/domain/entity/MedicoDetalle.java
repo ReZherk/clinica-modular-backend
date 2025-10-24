@@ -27,4 +27,8 @@ public class MedicoDetalle {
  @ManyToOne
  @JoinColumn(name = "Id_Especialidad")
  private Especialidad especialidad;
+
+ @Column(name = "Horas_Semanales", nullable = false)
+ private Integer horasSemanales;
+
 }
