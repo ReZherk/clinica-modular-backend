@@ -14,7 +14,7 @@ import ReZherk.clinica.sistema.modules.admin.application.dto.request.RegisterMed
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.RegisterResponseDto;
-import ReZherk.clinica.sistema.modules.admin.application.service.AdminService;
+import ReZherk.clinica.sistema.modules.admin.application.service.MedicoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -26,26 +26,26 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class MedicoController {
- private final AdminService adminService;
+ private final MedicoService medicoService;
 
- @PostMapping("/register")
+ @PostMapping("/create")
  public ResponseEntity<RegisterResponseDto> registerDoctors(@Valid @RequestBody RegisterMedicoDto registerDto) {
 
-  RegisterResponseDto response = adminService.registrarMedico(registerDto);
+  RegisterResponseDto response = medicoService.registrarMedico(registerDto);
 
   return new ResponseEntity<>(response, HttpStatus.CREATED);
  }
 
  @GetMapping
  public ResponseEntity<List<MedicoResponseDto>> listDoctors() {
-  List<MedicoResponseDto> medicos = adminService.listarMedicos();
+  List<MedicoResponseDto> medicos = medicoService.listarMedicos();
   return ResponseEntity.ok(medicos);
  }
 
  // Contar médicos activos e inactivos
  @GetMapping("/count")
  public ResponseEntity<ApiResponse<CountResponse>> tellDoctors() {
-  CountResponse conteo = adminService.contarMedicosActivosInactivos();
+  CountResponse conteo = medicoService.contarMedicosActivosInactivos();
   return ResponseEntity.ok(new ApiResponse<>(true, "Cantidad de medicos activos e inactivos", conteo));
  }
 

@@ -1,37 +1,24 @@
 package ReZherk.clinica.sistema.modules.admin.application.service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import ReZherk.clinica.sistema.core.application.dto.UsuarioBaseDto;
-import ReZherk.clinica.sistema.core.domain.entity.MedicoDetalle;
 import ReZherk.clinica.sistema.core.domain.entity.RolPerfil;
 import ReZherk.clinica.sistema.core.domain.entity.Usuario;
 import ReZherk.clinica.sistema.core.domain.entity.UsuarioPerfil;
-import ReZherk.clinica.sistema.core.domain.repository.MedicoDetalleRepository;
 import ReZherk.clinica.sistema.core.domain.repository.RolPerfilRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioPerfilRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignAdminToUserRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePasswordRequestDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.request.RegisterMedicoDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminBaseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.UserResponseDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
-import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.response.RegisterResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.UserMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.AssignRoleMapper;
-import ReZherk.clinica.sistema.modules.admin.application.mapper.MedicoDetalleMapper;
-import ReZherk.clinica.sistema.modules.admin.application.mapper.MedicoMapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -42,32 +29,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AdminService {
 
-  private final MedicoValidator validator;
-  private final MedicoMapper medicoMapper;
   private final PasswordEncoder passwordEncoder;
   private final RolPerfilRepository rolPerfilRepository;
   private final UsuarioRepository usuarioRepository;
-  private final MedicoDetalleMapper medicoDetalleMapper;
-  private final MedicoDetalleRepository medicoDetalleRepository;
   private final AssignRoleMapper assignRoleMapper;
   private final UsuarioPerfilRepository usuarioPerfilRepository;
-
-  @Transactional
-  public RegisterResponseDto registrarMedico(RegisterMedicoDto registerDto) {
-    validator.validateEmailNotExists(registerDto.getEmail());
-    validator.validateCmpNotExists(registerDto.getMedicoDetalle().getCmp());
-    validator.validateDniNotExists(registerDto.getNumeroDocumento());
-
-    Usuario medico = createUsuarioBase(registerDto);
-    assignRoleToUser(medico, "MEDICO");
-    Usuario savedMedico = usuarioRepository.save(medico);
-
-    MedicoDetalle medicoDetalle = medicoDetalleMapper.toEntity(registerDto.getMedicoDetalle(), savedMedico);
-    medicoDetalleRepository.save(medicoDetalle);
-
-    return medicoMapper.toRegisterResponse(savedMedico, "Medico registrado correctamente");
-
-  }
 
   @Transactional
   public void createAdminUser(AssignAdminToUserRequestDto dto) {
@@ -96,17 +62,6 @@ public class AdminService {
 
     return user;
   }
-
-  private void assignRoleToUser(Usuario usuario, String roleName) {
-    RolPerfil rol = rolPerfilRepository.findByNombre(roleName)
-        .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado: " + roleName));
-
-    Set<RolPerfil> roles = new HashSet<>();
-    roles.add(rol);
-    usuario.setPerfiles(roles);
-  }
-
-  // Apartir de qui esta bien,arriab debo modificar.
 
   @Transactional(readOnly = true)
   public Page<UserResponseDto> getActiveAdministrators(String search, String searchType, Pageable pageable) {
@@ -171,13 +126,6 @@ public class AdminService {
     Usuario usuario = usuarioRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Administrador no encontrado"));
 
-    /*
-     * if (!passwordEncoder.matches(dto.getPasswordCurrent(),
-     * usuario.getPasswordHash())) {
-     * throw new BadCredentialsException("La contraseña actual es incorrecta");
-     * }
-     */
-
     String newPasswordHash = passwordEncoder.encode(dto.getNewPassword());
     usuario.setPasswordHash(newPasswordHash);
 
@@ -206,36 +154,6 @@ public class AdminService {
         .orElseThrow(() -> new RuntimeException("Administrador no encontrado con id: " + id));
 
     return assignRoleMapper.toUserBaseDto(usuario);
-  }
-
-  // Rvisar
-
-  public List<MedicoResponseDto> listarMedicos() {
-    return usuarioRepository.findAll().stream()
-        .filter(u -> u.getPerfiles().stream()
-            .anyMatch(p -> p.getNombre().equalsIgnoreCase("MEDICO")))
-        .map(u -> {
-          // si existe detalle, lo traemos
-          MedicoDetalle detalle = medicoDetalleRepository.findByIdUsuarioWithUsuario(u.getId())
-              .orElse(null);
-          return MedicoMapper.toDto(u, detalle);
-        })
-        .collect(Collectors.toList());
-  }
-
-  public CountResponse contarMedicosActivosInactivos() {
-    List<Usuario> medicos = usuarioRepository.findAll().stream()
-        .filter(u -> u.getPerfiles().stream()
-            .anyMatch(p -> p.getNombre().equalsIgnoreCase("MEDICO")))
-        .toList();
-
-    long activos = medicos.stream().filter(Usuario::getEstadoRegistro).count();
-    long inactivos = medicos.size() - activos;
-
-    return CountResponse.builder()
-        .activos(activos)
-        .inactivos(inactivos)
-        .build();
   }
 
 }
