@@ -13,7 +13,7 @@ import ReZherk.clinica.sistema.core.domain.repository.RolPerfilRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioPerfilRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
-import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignAdminToUserRequestDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.request.AdminCreationRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePasswordRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminBaseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.UserResponseDto;
@@ -36,7 +36,7 @@ public class AdminService {
   private final UsuarioPerfilRepository usuarioPerfilRepository;
 
   @Transactional
-  public void createAdminUser(AssignAdminToUserRequestDto dto) {
+  public void createAdminUser(AdminCreationRequestDto dto) {
 
     Usuario user = createUsuarioBase(dto);
 
@@ -107,7 +107,7 @@ public class AdminService {
   }
 
   @Transactional
-  public UserResponseDto modificarAdministrador(Integer id, AssignAdminToUserRequestDto dto) {
+  public UserResponseDto modificarAdministrador(Integer id, AdminCreationRequestDto dto) {
     Usuario usuario = usuarioRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Administrador no encontrado"));
 

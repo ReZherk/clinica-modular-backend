@@ -6,6 +6,6 @@ import ReZherk.clinica.sistema.core.application.dto.UsuarioBaseDto;
 @Getter
 @Setter
 @Builder
-public class AssignAdminToUserRequestDto extends UsuarioBaseDto {
+public class AdminCreationRequestDto extends UsuarioBaseDto {
 
 }

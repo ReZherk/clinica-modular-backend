@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RegisterMedicoDto extends UsuarioBaseDto {
+public class MedicoCreationDto extends UsuarioBaseDto {
 
  @Valid
  @NotNull(message = "Los detalles del medico son obligatorios")

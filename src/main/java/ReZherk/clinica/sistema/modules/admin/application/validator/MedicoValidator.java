@@ -1,10 +1,9 @@
-package ReZherk.clinica.sistema.modules.admin.application.service;
+package ReZherk.clinica.sistema.modules.admin.application.validator;
 
 import org.springframework.stereotype.Component;
 
 import ReZherk.clinica.sistema.core.domain.repository.EspecialidadRepository;
 import ReZherk.clinica.sistema.core.domain.repository.MedicoDetalleRepository;
-import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.exception.BusinessException;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -13,22 +12,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MedicoValidator {
 
- private final UsuarioRepository usuarioRepository;
  private final MedicoDetalleRepository medicoDetalleRepository;
  private final EspecialidadRepository especialidadRepository;
-
- // ===== VALIDACIONES =====
- public void validateEmailNotExists(String email) {
-  if (usuarioRepository.existsByEmail(email)) {
-   throw new BusinessException("Ya existe un usuario con el email: " + email);
-  }
- }
-
- public void validateDniNotExists(String numeroDocumento) {
-  if (numeroDocumento != null && usuarioRepository.existsByNumeroDocumento(numeroDocumento)) {
-   throw new BusinessException("Ya existe un paciente con el DNI: " + numeroDocumento);
-  }
- }
+ private final CommonValidator commonValidator;
 
  public void validateCmpNotExists(String cmp) {
   if (medicoDetalleRepository.existsByCmp(cmp)) {
@@ -40,6 +26,13 @@ public class MedicoValidator {
   if (!especialidadRepository.existsById(idEspecialidad)) {
    throw new ResourceNotFoundException("Especialidad no encontrada con ID: " + idEspecialidad);
   }
+ }
+
+ public void validateForCreation(String email, String numeroDocumento, String cmp, Integer idEspecialidad) {
+  commonValidator.validateUsuarioUniqueFields(email, numeroDocumento);
+
+  validateCmpNotExists(cmp);
+  validateEspecialidadExists(idEspecialidad);
  }
 
 }

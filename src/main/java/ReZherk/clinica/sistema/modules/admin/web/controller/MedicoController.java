@@ -10,10 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ReZherk.clinica.sistema.core.application.dto.ApiResponse;
-import ReZherk.clinica.sistema.modules.admin.application.dto.request.RegisterMedicoDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.request.MedicoCreationDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.response.RegisterResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.service.MedicoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +27,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class MedicoController {
  private final MedicoService medicoService;
 
- @PostMapping("/create")
- public ResponseEntity<RegisterResponseDto> registerDoctors(@Valid @RequestBody RegisterMedicoDto registerDto) {
+ @PostMapping("/create-medico")
+ public ResponseEntity<ApiResponse<Void>> createDoctors(@Valid @RequestBody MedicoCreationDto dto) {
+  medicoService.registrarMedico(dto);
 
-  RegisterResponseDto response = medicoService.registrarMedico(registerDto);
-
-  return new ResponseEntity<>(response, HttpStatus.CREATED);
+  return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(true, "Medico creado exitosamente", null));
  }
 
  @GetMapping

@@ -1,8 +1,6 @@
 package ReZherk.clinica.sistema.modules.admin.application.service;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,19 +9,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ReZherk.clinica.sistema.core.application.dto.UsuarioBaseDto;
 import ReZherk.clinica.sistema.core.domain.entity.MedicoDetalle;
-import ReZherk.clinica.sistema.core.domain.entity.RolPerfil;
 import ReZherk.clinica.sistema.core.domain.entity.Usuario;
 import ReZherk.clinica.sistema.core.domain.repository.MedicoDetalleRepository;
-import ReZherk.clinica.sistema.core.domain.repository.RolPerfilRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
-import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
-import ReZherk.clinica.sistema.modules.admin.application.dto.request.RegisterMedicoDto;
+import ReZherk.clinica.sistema.core.shared.service.UsuarioRolService;
+import ReZherk.clinica.sistema.modules.admin.application.dto.request.MedicoCreationDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.response.RegisterResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.AssignRoleMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.MedicoDetalleMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.MedicoMapper;
+import ReZherk.clinica.sistema.modules.admin.application.validator.MedicoValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,38 +29,25 @@ import lombok.extern.slf4j.Slf4j;
 public class MedicoService {
 
  private final MedicoValidator validator;
- private final MedicoMapper medicoMapper;
  private final MedicoDetalleMapper medicoDetalleMapper;
  private final AssignRoleMapper assignRoleMapper;
  private final PasswordEncoder passwordEncoder;
- private final RolPerfilRepository rolPerfilRepository;
  private final UsuarioRepository usuarioRepository;
  private final MedicoDetalleRepository medicoDetalleRepository;
+ private final UsuarioRolService usuarioRolService;
 
  @Transactional
- public RegisterResponseDto registrarMedico(RegisterMedicoDto registerDto) {
-  validator.validateEmailNotExists(registerDto.getEmail());
-  validator.validateCmpNotExists(registerDto.getMedicoDetalle().getCmp());
-  validator.validateDniNotExists(registerDto.getNumeroDocumento());
+ public void registrarMedico(MedicoCreationDto dto) {
+  validator.validateForCreation(dto.getEmail(), dto.getNumeroDocumento(), dto.getMedicoDetalle().getCmp(),
+    dto.getMedicoDetalle().getIdEspecialidad());
 
-  Usuario medico = createUsuarioBase(registerDto);
-  assignRoleToUser(medico, "MEDICO");
+  Usuario medico = createUsuarioBase(dto);
+  usuarioRolService.assignRoleToUser(medico, "MEDICO");
   Usuario savedMedico = usuarioRepository.save(medico);
 
-  MedicoDetalle medicoDetalle = medicoDetalleMapper.toEntity(registerDto.getMedicoDetalle(), savedMedico);
+  MedicoDetalle medicoDetalle = medicoDetalleMapper.toEntity(dto.getMedicoDetalle(), savedMedico);
   medicoDetalleRepository.save(medicoDetalle);
 
-  return medicoMapper.toRegisterResponse(savedMedico, "Medico registrado correctamente");
-
- }
-
- private void assignRoleToUser(Usuario usuario, String roleName) {
-  RolPerfil rol = rolPerfilRepository.findByNombre(roleName)
-    .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado: " + roleName));
-
-  Set<RolPerfil> roles = new HashSet<>();
-  roles.add(rol);
-  usuario.setPerfiles(roles);
  }
 
  private Usuario createUsuarioBase(UsuarioBaseDto dto) {

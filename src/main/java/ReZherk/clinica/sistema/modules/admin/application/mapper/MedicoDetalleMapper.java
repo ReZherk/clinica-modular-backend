@@ -13,16 +13,17 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class MedicoDetalleMapper {
- private final EspecialidadRepository especialidadRepository;
+  private final EspecialidadRepository especialidadRepository;
 
- public MedicoDetalle toEntity(MedicoDetalleDto dto, Usuario usuario) {
-  Especialidad especialidad = especialidadRepository.findById(dto.getIdEspecialidad())
-    .orElseThrow(() -> new ResourceNotFoundException("Especialidad no encontrada"));
+  public MedicoDetalle toEntity(MedicoDetalleDto dto, Usuario usuario) {
+    Especialidad especialidad = especialidadRepository.findById(dto.getIdEspecialidad())
+        .orElseThrow(() -> new ResourceNotFoundException("Especialidad no encontrada"));
 
-  return MedicoDetalle.builder()
-    .usuario(usuario)
-    .cmp(dto.getCmp())
-    .especialidad(especialidad)
-    .build();
- }
+    return MedicoDetalle.builder()
+        .usuario(usuario)
+        .cmp(dto.getCmp())
+        .especialidad(especialidad)
+        .horasSemanales(dto.getHorasSemanales())
+        .build();
+  }
 }

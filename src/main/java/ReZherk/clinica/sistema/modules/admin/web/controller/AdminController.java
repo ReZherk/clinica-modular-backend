@@ -14,7 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import ReZherk.clinica.sistema.core.application.dto.ApiResponse;
-import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignAdminToUserRequestDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.request.AdminCreationRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePasswordRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminBaseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.UserResponseDto;
@@ -29,7 +29,7 @@ public class AdminController {
   private final AdminService adminService;
 
   @PostMapping("/create-admin")
-  public ResponseEntity<ApiResponse<Void>> createAdmin(@Validated @RequestBody AssignAdminToUserRequestDto dto) {
+  public ResponseEntity<ApiResponse<Void>> createAdmin(@Validated @RequestBody AdminCreationRequestDto dto) {
     adminService.createAdminUser(dto);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(new ApiResponse<>(true, "Usuario administrador creado exitosamente", null));
@@ -113,7 +113,7 @@ public class AdminController {
   @PutMapping("/{id}")
   public ResponseEntity<ApiResponse<UserResponseDto>> updateAdmin(
       @PathVariable Integer id,
-      @RequestBody AssignAdminToUserRequestDto data) {
+      @RequestBody AdminCreationRequestDto data) {
 
     UserResponseDto update = adminService.modificarAdministrador(id, data);
     return ResponseEntity.ok(new ApiResponse<>(true, "Se actualizo satisfactoriamente", update));
