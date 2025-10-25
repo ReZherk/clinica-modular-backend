@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ReZherk.clinica.sistema.core.application.dto.UsuarioBaseDto;
+import ReZherk.clinica.sistema.core.application.mapper.AssignRoleMapper;
 import ReZherk.clinica.sistema.core.domain.entity.RolPerfil;
 import ReZherk.clinica.sistema.core.domain.entity.Usuario;
 import ReZherk.clinica.sistema.core.domain.entity.UsuarioPerfil;
@@ -19,7 +20,6 @@ import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePassw
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.UserResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.UsuarioWithRoleResponse;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.UserMapper;
-import ReZherk.clinica.sistema.modules.admin.application.mapper.AssignRoleMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,142 +29,142 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserService {
 
- private final UsuarioRepository usuarioRepository;
- private final RolPerfilRepository rolPerfilRepository;
- private final AssignRoleMapper assignRoleMapper;
- private final PasswordEncoder passwordEncoder;
- private final UsuarioPerfilRepository usuarioPerfilRepository;
+  private final UsuarioRepository usuarioRepository;
+  private final RolPerfilRepository rolPerfilRepository;
+  private final AssignRoleMapper assignRoleMapper;
+  private final PasswordEncoder passwordEncoder;
+  private final UsuarioPerfilRepository usuarioPerfilRepository;
 
- @Transactional(readOnly = true)
- public Page<UserResponseDto> getActiveUser(String search, String searchType, Pageable pageable, String rol) {
+  @Transactional(readOnly = true)
+  public Page<UserResponseDto> getActiveUser(String search, String searchType, Pageable pageable, String rol) {
 
-  if (!rolPerfilRepository.existsByNombre(rol)) {
-   throw new RuntimeException("El rol '" + rol + "' no existe");
+    if (!rolPerfilRepository.existsByNombre(rol)) {
+      throw new RuntimeException("El rol '" + rol + "' no existe");
+    }
+
+    log.info("Obteniendo usuarios activos - Búsqueda: '{}', Tipo: '{}', Página: {}, Tamaño: {}, rol: {}",
+        search != null ? search : "sin busqueda", searchType, pageable.getPageNumber(), pageable.getPageSize(), rol);
+
+    try {
+      Page<UserResponseDto> result = usuarioRepository
+          .findUserByEstadoAndSearch(true, rol, search, searchType, pageable)
+          .map(u -> UserMapper.toDTO(u, rol));
+
+      log.info("Se encontraron {} usuarios activos en total,mostrando {} registros", result.getTotalElements(),
+          result.getNumberOfElements());
+
+      return result;
+    } catch (Exception e) {
+      log.error("Error al obtener usuarios activos con busqueda '{}'", search, e);
+      throw e;
+    }
+
   }
 
-  log.info("Obteniendo usuarios activos - Búsqueda: '{}', Tipo: '{}', Página: {}, Tamaño: {}, rol: {}",
-    search != null ? search : "sin busqueda", searchType, pageable.getPageNumber(), pageable.getPageSize(), rol);
+  @Transactional(readOnly = true)
+  public Page<UserResponseDto> getInactiveUser(String search, String searchType, Pageable pageable, String rol) {
 
-  try {
-   Page<UserResponseDto> result = usuarioRepository
-     .findUserByEstadoAndSearch(true, rol, search, searchType, pageable)
-     .map(u -> UserMapper.toDTO(u, rol));
+    log.info("Obteniendo usuarios inactivos - busqueda: '{}' , pagina: '{}' ,Tamaño: '{}'",
+        search != null ? search : "Sin busqueda", pageable.getPageNumber(), pageable.getPageSize());
 
-   log.info("Se encontraron {} usuarios activos en total,mostrando {} registros", result.getTotalElements(),
-     result.getNumberOfElements());
+    try {
 
-   return result;
-  } catch (Exception e) {
-   log.error("Error al obtener usuarios activos con busqueda '{}'", search, e);
-   throw e;
+      Page<UserResponseDto> result = usuarioRepository
+          .findUserByEstadoAndSearch(false, rol, search,
+              searchType, pageable)
+          .map(U -> UserMapper.toDTO(U, rol));
+      log.info("Se encontraron {} usuarios inactivos en total, mostrando {} registros",
+          result.getTotalElements(), result.getNumberOfElements());
+      return result;
+    } catch (Exception e) {
+
+      log.error("Error al obtener usuarios inactivos con busqueda: '{}'", search, e);
+      throw e;
+    }
   }
 
- }
+  @Transactional
+  public void assignRoleToUser(AssignRoleToUserRequestDto dto) {
 
- @Transactional(readOnly = true)
- public Page<UserResponseDto> getInactiveUser(String search, String searchType, Pageable pageable, String rol) {
+    RolPerfil rol = rolPerfilRepository.findById(dto.getIdRol())
+        .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado"));
 
-  log.info("Obteniendo usuarios inactivos - busqueda: '{}' , pagina: '{}' ,Tamaño: '{}'",
-    search != null ? search : "Sin busqueda", pageable.getPageNumber(), pageable.getPageSize());
+    Usuario user = createUsuarioBase(dto);
 
-  try {
+    Usuario savedUser = usuarioRepository.save(user);
 
-   Page<UserResponseDto> result = usuarioRepository
-     .findUserByEstadoAndSearch(false, rol, search,
-       searchType, pageable)
-     .map(U -> UserMapper.toDTO(U, rol));
-   log.info("Se encontraron {} usuarios inactivos en total, mostrando {} registros",
-     result.getTotalElements(), result.getNumberOfElements());
-   return result;
-  } catch (Exception e) {
+    UsuarioPerfil link = UsuarioPerfil.builder()
+        .idUsuario(savedUser.getId())
+        .idPerfil(rol.getId())
+        .build();
 
-   log.error("Error al obtener usuarios inactivos con busqueda: '{}'", search, e);
-   throw e;
+    usuarioPerfilRepository.save(link);
   }
- }
 
- @Transactional
- public void assignRoleToUser(AssignRoleToUserRequestDto dto) {
+  @Transactional
+  private Usuario createUsuarioBase(UsuarioBaseDto dto) {
+    Usuario user = assignRoleMapper.toEntity(dto);
 
-  RolPerfil rol = rolPerfilRepository.findById(dto.getIdRol())
-    .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado"));
+    // BCrypt maneja internamente el salt, no necesitas generarlo
+    String hashedPassword = passwordEncoder.encode(dto.getPassword());
+    user.setPasswordHash(hashedPassword);
 
-  Usuario user = createUsuarioBase(dto);
+    return user;
+  }
 
-  Usuario savedUser = usuarioRepository.save(user);
+  public UsuarioWithRoleResponse obtenerUsuarioPorId(Integer id) {
+    Usuario usuario = usuarioRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
 
-  UsuarioPerfil link = UsuarioPerfil.builder()
-    .idUsuario(savedUser.getId())
-    .idPerfil(rol.getId())
-    .build();
+    String rolActual = usuario.getPerfiles().stream()
+        .map(RolPerfil::getNombre)
+        .findFirst()
+        .orElse("SIN ROL");
 
-  usuarioPerfilRepository.save(link);
- }
+    UsuarioBaseDto dto = assignRoleMapper.toUserBaseDto(usuario);
 
- @Transactional
- private Usuario createUsuarioBase(UsuarioBaseDto dto) {
-  Usuario user = assignRoleMapper.toEntity(dto);
+    return UsuarioWithRoleResponse.builder()
+        .usuario(dto)
+        .rolActual(rolActual)
+        .build();
+  }
 
-  // BCrypt maneja internamente el salt, no necesitas generarlo
-  String hashedPassword = passwordEncoder.encode(dto.getPassword());
-  user.setPasswordHash(hashedPassword);
+  @Transactional
+  public void cambiarPassword(Integer id, ChangePasswordRequestDto dto) {
+    Usuario usuario = usuarioRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Administrador no encontrado"));
 
-  return user;
- }
+    String newPasswordHash = passwordEncoder.encode(dto.getNewPassword());
+    usuario.setPasswordHash(newPasswordHash);
 
- public UsuarioWithRoleResponse obtenerUsuarioPorId(Integer id) {
-  Usuario usuario = usuarioRepository.findById(id)
-    .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+    usuarioRepository.save(usuario);
 
-  String rolActual = usuario.getPerfiles().stream()
-    .map(RolPerfil::getNombre)
-    .findFirst()
-    .orElse("SIN ROL");
+  }
 
-  UsuarioBaseDto dto = assignRoleMapper.toUserBaseDto(usuario);
+  @Transactional
+  public UserResponseDto activeUser(Integer id) {
+    Usuario usuario = usuarioRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
-  return UsuarioWithRoleResponse.builder()
-    .usuario(dto)
-    .rolActual(rolActual)
-    .build();
- }
+    usuario.setEstadoRegistro(true);
+    Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
- @Transactional
- public void cambiarPassword(Integer id, ChangePasswordRequestDto dto) {
-  Usuario usuario = usuarioRepository.findById(id)
-    .orElseThrow(() -> new EntityNotFoundException("Administrador no encontrado"));
+    UsuarioWithRoleResponse usuarioConRol = obtenerUsuarioPorId(usuarioGuardado.getId());
 
-  String newPasswordHash = passwordEncoder.encode(dto.getNewPassword());
-  usuario.setPasswordHash(newPasswordHash);
+    return UserMapper.toDTO(usuarioGuardado, usuarioConRol.getRolActual());
+  }
 
-  usuarioRepository.save(usuario);
+  @Transactional
+  public UserResponseDto desactiveUser(Integer id) {
+    Usuario usuario = usuarioRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
- }
+    usuario.setEstadoRegistro(false);
+    Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
- @Transactional
- public UserResponseDto activeUser(Integer id) {
-  Usuario usuario = usuarioRepository.findById(id)
-    .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+    UsuarioWithRoleResponse usuarioConRol = obtenerUsuarioPorId(usuarioGuardado.getId());
 
-  usuario.setEstadoRegistro(true);
-  Usuario usuarioGuardado = usuarioRepository.save(usuario);
-
-  UsuarioWithRoleResponse usuarioConRol = obtenerUsuarioPorId(usuarioGuardado.getId());
-
-  return UserMapper.toDTO(usuarioGuardado, usuarioConRol.getRolActual());
- }
-
- @Transactional
- public UserResponseDto desactiveUser(Integer id) {
-  Usuario usuario = usuarioRepository.findById(id)
-    .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
-
-  usuario.setEstadoRegistro(false);
-  Usuario usuarioGuardado = usuarioRepository.save(usuario);
-
-  UsuarioWithRoleResponse usuarioConRol = obtenerUsuarioPorId(usuarioGuardado.getId());
-
-  return UserMapper.toDTO(usuarioGuardado, usuarioConRol.getRolActual());
- }
+    return UserMapper.toDTO(usuarioGuardado, usuarioConRol.getRolActual());
+  }
 
 }

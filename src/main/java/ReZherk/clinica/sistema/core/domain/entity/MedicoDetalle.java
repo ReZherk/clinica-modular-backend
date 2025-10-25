@@ -16,7 +16,7 @@ public class MedicoDetalle {
  @Column(name = "Id_Usuario")
  private Integer idUsuario;
 
- @OneToOne
+ @OneToOne(fetch = FetchType.LAZY)
  @MapsId
  @JoinColumn(name = "Id_Usuario")
  private Usuario usuario;
@@ -24,7 +24,7 @@ public class MedicoDetalle {
  @Column(name = "CMP", length = 20)
  private String cmp;
 
- @ManyToOne
+ @ManyToOne(fetch = FetchType.LAZY)
  @JoinColumn(name = "Id_Especialidad")
  private Especialidad especialidad;
 

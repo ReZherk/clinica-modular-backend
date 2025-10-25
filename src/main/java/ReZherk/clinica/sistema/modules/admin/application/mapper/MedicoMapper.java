@@ -63,12 +63,16 @@ public class MedicoMapper {
   public static MedicoResponseDto toDto(Usuario usuario, MedicoDetalle detalle) {
     return MedicoResponseDto.builder()
         .id(usuario.getId())
-        .nombres(usuario.getNombres())
-        .apellidos(usuario.getApellidos())
+        .tipoDocumentoId(usuario.getTipoDocumento() != null ? usuario.getTipoDocumento().getId() : null)
+        .numeroDocumento(usuario.getNumeroDocumento())
+        .nombresCompleto(usuario.getNombres() + " " + usuario.getApellidos())
         .email(usuario.getEmail())
         .telefono(usuario.getTelefono())
         .estadoRegistro(usuario.getEstadoRegistro())
         .cmp(detalle != null ? detalle.getCmp() : null)
+        .especialidad(detalle != null && detalle.getEspecialidad() != null
+            ? detalle.getEspecialidad().getNombreEspecialidad()
+            : null)
         .build();
   }
 }

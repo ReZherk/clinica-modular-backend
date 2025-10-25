@@ -2,6 +2,7 @@ package ReZherk.clinica.sistema.core.domain.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import ReZherk.clinica.sistema.core.domain.entity.Especialidad;
@@ -27,4 +28,14 @@ public interface MedicoDetalleRepository extends JpaRepository<MedicoDetalle, In
   List<MedicoDetalle> findByEspecialidadId(Integer idEspecialidad);
 
   List<MedicoDetalle> findByEspecialidad(Especialidad especialidad);
+
+  // Método optimizado para cargar múltiples detalles
+  @Query("""
+      SELECT md
+      FROM MedicoDetalle md
+      LEFT JOIN FETCH md.especialidad
+      LEFT JOIN FETCH md.usuario
+      WHERE md.usuario.id IN :usuarioIds
+      """)
+  List<MedicoDetalle> findByUsuarioIdsWithEspecialidad(@Param("usuarioIds") List<Integer> usuarioIds);
 }

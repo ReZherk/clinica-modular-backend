@@ -1,4 +1,4 @@
-package ReZherk.clinica.sistema.modules.admin.application.mapper;
+package ReZherk.clinica.sistema.core.application.mapper;
 
 import org.springframework.stereotype.Component;
 

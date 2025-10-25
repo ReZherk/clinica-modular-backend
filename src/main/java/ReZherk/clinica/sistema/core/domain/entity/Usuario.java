@@ -51,7 +51,7 @@ public class Usuario {
  private LocalDateTime fechaCreacion;
 
  // Relación con perfiles
- @ManyToMany(fetch = FetchType.EAGER)
+ @ManyToMany(fetch = FetchType.LAZY)
  @JoinTable(name = "usuario_perfil", joinColumns = @JoinColumn(name = "Id_Usuario"), inverseJoinColumns = @JoinColumn(name = "Id_Perfil"))
  @Builder.Default
  private Set<RolPerfil> perfiles = new HashSet<>();

@@ -15,12 +15,12 @@ import ReZherk.clinica.sistema.modules.admin.application.dto.request.RoleRequest
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.PermissionResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.RoleResponseDto;
-import ReZherk.clinica.sistema.modules.admin.application.mapper.AssignRoleMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.PermissionMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.RoleMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ReZherk.clinica.sistema.core.application.dto.UsuarioBaseDto;
+import ReZherk.clinica.sistema.core.application.mapper.AssignRoleMapper;
 import ReZherk.clinica.sistema.core.domain.entity.Permission;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

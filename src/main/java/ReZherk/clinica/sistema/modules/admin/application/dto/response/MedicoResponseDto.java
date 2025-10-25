@@ -9,10 +9,13 @@ import lombok.*;
 @Builder
 public class MedicoResponseDto {
  private Integer id;
- private String nombres;
- private String apellidos;
+ private String numeroDocumento;
+ private Integer tipoDocumentoId;
+ private String nombresCompleto;
  private String email;
  private String telefono;
- private boolean estadoRegistro;
  private String cmp;
+ private String especialidad;
+ private Integer horasSemanales;
+ private boolean estadoRegistro;
 }

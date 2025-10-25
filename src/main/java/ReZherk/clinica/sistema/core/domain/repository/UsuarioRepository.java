@@ -72,4 +72,43 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
             @Param("search") String search,
             @Param("searchType") String searchType,
             Pageable pageable);
+
+    @Query("""
+            SELECT DISTINCT u FROM Usuario u
+            LEFT JOIN FETCH u.perfiles p
+            LEFT JOIN FETCH u.tipoDocumento
+            WHERE u.estadoRegistro = :estado
+            AND EXISTS (
+                SELECT 1 FROM RolPerfil r
+                WHERE r MEMBER OF u.perfiles
+                AND UPPER(r.nombre) = UPPER(:rol)
+            )
+            AND (
+                :search IS NULL OR :search = '' OR
+                (
+                    CASE
+                        WHEN :searchType = 'documento' THEN u.numeroDocumento LIKE CONCAT('%', :search, '%')
+                        ELSE (
+                            LOWER(u.nombres) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                            LOWER(u.apellidos) LIKE LOWER(CONCAT('%', :search, '%'))
+                        )
+                    END
+                ) = true
+            )
+            ORDER BY u.id
+            """)
+    List<Usuario> findUserByEstadoAndSearchWithProfiles(
+            @Param("estado") Boolean estado,
+            @Param("rol") String rol,
+            @Param("search") String search,
+            @Param("searchType") String searchType);
+
+    @Query("""
+            SELECT DISTINCT u
+            FROM Usuario u
+            LEFT JOIN FETCH u.perfiles r
+            LEFT JOIN FETCH r.permisos p
+            WHERE u.numeroDocumento = :numeroDocumento
+            """)
+    Optional<Usuario> findByNumeroDocumentoWithRolesAndPermissions(@Param("numeroDocumento") String numeroDocumento);
 }

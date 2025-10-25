@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -31,10 +32,10 @@ public class CustomUserDetailsService implements UserDetailsService {
    * Carga usuario por DNI y construye UserDetails para Spring Security
    */
   @Override
+  @Transactional(readOnly = true) // Transacción para cargar relaciones LAZY
   public UserDetails loadUserByUsername(String numeroDocumento) throws UsernameNotFoundException {
-    // Buscar DNI en la base de datos
-    Usuario user = usuarioRepository.findByNumeroDocumento(
-        numeroDocumento)
+    // Usar método que carga perfiles y permisos con JOIN FETCH
+    Usuario user = usuarioRepository.findByNumeroDocumentoWithRolesAndPermissions(numeroDocumento)
         .orElseThrow(() -> new UsernameNotFoundException("Numero de documento no encontrado: " + numeroDocumento));
 
     // Construir objeto UserDetails que Spring Security entiende

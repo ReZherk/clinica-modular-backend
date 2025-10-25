@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import ReZherk.clinica.sistema.core.application.dto.UsuarioBaseDto;
+import ReZherk.clinica.sistema.core.application.mapper.AssignRoleMapper;
 import ReZherk.clinica.sistema.core.domain.entity.RolPerfil;
 import ReZherk.clinica.sistema.core.domain.entity.Usuario;
 import ReZherk.clinica.sistema.core.domain.entity.UsuarioPerfil;
@@ -18,7 +19,6 @@ import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePassw
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.AdminBaseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.UserResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.UserMapper;
-import ReZherk.clinica.sistema.modules.admin.application.mapper.AssignRoleMapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;

@@ -7,17 +7,20 @@ import ReZherk.clinica.sistema.modules.admin.application.dto.response.UserRespon
 
 @Component
 public class UserMapper {
+
   public static UserResponseDto toDTO(Usuario usuario, String rol) {
     return UserResponseDto.builder()
         .id(usuario.getId())
         .numeroDocumento(usuario.getNumeroDocumento())
         .nombreCompleto(usuario.getNombres() + " " + usuario.getApellidos())
-        .tipoDocumento(usuario.getTipoDocumento().getNombre())
+        .tipoDocumento(
+            usuario.getTipoDocumento() != null
+                ? usuario.getTipoDocumento().getNombre()
+                : "SIN TIPO") // ← evita el NullPointerException
         .email(usuario.getEmail())
         .telefono(usuario.getTelefono())
         .rol(rol)
         .estadoRegistro(usuario.getEstadoRegistro())
         .build();
   }
-
 }
