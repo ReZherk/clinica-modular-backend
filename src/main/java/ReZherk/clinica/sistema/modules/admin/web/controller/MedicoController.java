@@ -46,7 +46,8 @@ public class MedicoController {
    @RequestParam(defaultValue = "0") int page,
    @RequestParam(defaultValue = "10") int size,
    @RequestParam(defaultValue = "id") String sortBy,
-   @RequestParam(defaultValue = "ASC") String sorDirection) {
+   @RequestParam(defaultValue = "ASC") String sorDirection,
+   @RequestParam(required = false) String especialidad) {
 
   log.info(
     "GET /api/medicos/active -search: '{}', searchType: '{}',page: '{}', size:'{}', sortBy: '{}', sortDirection: {}",
@@ -56,7 +57,7 @@ public class MedicoController {
 
    Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-   Page<MedicoResponseDto> activeDoctors = medicoService.getActiveMedicos(search, searchType, pageable);
+   Page<MedicoResponseDto> activeDoctors = medicoService.getActiveMedicos(search, searchType, pageable, especialidad);
 
    log.info("Respuesta exitosa: {} medicos activos encontrados de {} totales",
      activeDoctors.getNumberOfElements(), activeDoctors.getTotalElements());
@@ -68,6 +69,40 @@ public class MedicoController {
    log.error("Error al obtener medicos activos", e);
    return ResponseEntity.internalServerError()
      .body(new ApiResponse<>(false, "Error al obtener medicos activos: " + e.getMessage(), null));
+  }
+ }
+
+ @GetMapping("/inactive")
+ public ResponseEntity<ApiResponse<Page<MedicoResponseDto>>> getInactiveDoctors(
+   @RequestParam(required = false) String search,
+   @RequestParam(required = false, defaultValue = "documento") String searchType,
+   @RequestParam(defaultValue = "0") int page,
+   @RequestParam(defaultValue = "10") int size,
+   @RequestParam(defaultValue = "id") String sortBy,
+   @RequestParam(defaultValue = "ASC") String sorDirection,
+   @RequestParam(required = false) String especialidad) {
+
+  log.info(
+    "GET /api/medicos/inactive -search: '{}', searchType: '{}',page: '{}', size:'{}', sortBy: '{}', sortDirection: {}",
+    search != null ? search : "Sin busqueda", searchType, page, size, sortBy, sorDirection);
+  try {
+   Sort.Direction direction = sorDirection.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+   Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+   Page<MedicoResponseDto> inactiveDoctors = medicoService.getInactiveMedicos(search, searchType, pageable,
+     especialidad);
+
+   log.info("Respuesta exitosa: {} medicos activos encontrados de {} totales",
+     inactiveDoctors.getNumberOfElements(), inactiveDoctors.getTotalElements());
+
+   return ResponseEntity.ok(
+     new ApiResponse<>(true, "Medicos Inactivos obtenidos exitosamente.", inactiveDoctors));
+
+  } catch (Exception e) {
+   log.error("Error al obtener medicos Inactivos", e);
+   return ResponseEntity.internalServerError()
+     .body(new ApiResponse<>(false, "Error al obtener medicos inactivos: " + e.getMessage(), null));
   }
  }
 

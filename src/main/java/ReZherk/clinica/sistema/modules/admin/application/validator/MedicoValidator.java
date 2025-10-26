@@ -22,9 +22,17 @@ public class MedicoValidator {
   }
  }
 
- public void validateEspecialidadExists(Integer idEspecialidad) {
+ public void validateEspecialidadExistsId(Integer idEspecialidad) {
   if (!especialidadRepository.existsById(idEspecialidad)) {
    throw new ResourceNotFoundException("Especialidad no encontrada con ID: " + idEspecialidad);
+  }
+ }
+
+ public void validateEspecialidadExists(String especialidad) {
+  if (especialidad != null && !especialidad.isEmpty()
+    && !especialidadRepository.existsByNombreEspecialidad(especialidad)) {
+
+   throw new RuntimeException("La especialidad '" + especialidad + "' no existe");
   }
  }
 
@@ -32,7 +40,7 @@ public class MedicoValidator {
   commonValidator.validateUsuarioUniqueFields(email, numeroDocumento);
 
   validateCmpNotExists(cmp);
-  validateEspecialidadExists(idEspecialidad);
+  validateEspecialidadExistsId(idEspecialidad);
  }
 
 }

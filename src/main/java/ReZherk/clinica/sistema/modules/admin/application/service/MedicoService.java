@@ -82,45 +82,48 @@ public class MedicoService {
   }
 
   ////////
-  ///
-  @Transactional(readOnly = true)
-  public Page<MedicoResponseDto> getActiveMedicos(String search, String searchType, Pageable pageable) {
 
-    log.info("Obteniendo medicos activos - Búsqueda: '{}', Tipo: '{}', Página: {}, Tamaño: {}",
-        search != null ? search : "sin busqueda", searchType, pageable.getPageNumber(), pageable.getPageSize());
+  @Transactional(readOnly = true)
+  public Page<MedicoResponseDto> getActiveMedicos(String search, String searchType, Pageable pageable,
+      String especialidad) {
+
+    validator.validateEspecialidadExists(especialidad);
+    log.info("Obteniendo medicos activos - Búsqueda: '{}', Tipo: '{}', Página: {}, Tamaño: {}, Especialidad:{}",
+        search != null ? search : "sin busqueda", searchType, pageable.getPageNumber(), pageable.getPageSize(),
+        especialidad != null ? especialidad : "todos");
 
     try {
-      // 1️⃣ Obtener TODOS los usuarios que cumplen el criterio (con perfiles
-      // cargados)
       List<Usuario> todosLosUsuarios = usuarioRepository
-          .findUserByEstadoAndSearchWithProfiles(true, "MEDICO", search, searchType);
+          .findUserByEstadoAndSearchWithProfiles(
+              true,
+              "MEDICO",
+              especialidad,
+              search,
+              searchType);
 
       if (todosLosUsuarios.isEmpty()) {
         log.info("No se encontraron médicos activos");
         return Page.empty(pageable);
       }
 
-      // 2️⃣ Aplicar paginación manualmente
+      // Aplicar paginación manualmente
       int start = (int) pageable.getOffset();
       int end = Math.min((start + pageable.getPageSize()), todosLosUsuarios.size());
       List<Usuario> usuariosPaginados = todosLosUsuarios.subList(start, end);
 
-      // 3️⃣ Obtener IDs de los usuarios de la página actual
       List<Integer> usuarioIds = usuariosPaginados.stream()
-          .map(Usuario::getId)
+          .map(u -> u.getId())
           .toList();
 
-      // 4️⃣ Cargar TODOS los detalles en UNA SOLA consulta
+      // Cargar TODOS los detalles en UNA SOLA consulta
       List<MedicoDetalle> detalles = medicoDetalleRepository
           .findByUsuarioIdsWithEspecialidad(usuarioIds);
 
-      // 5️⃣ Crear Map para acceso O(1)
       Map<Integer, MedicoDetalle> detallesMap = detalles.stream()
           .collect(Collectors.toMap(
               d -> d.getUsuario().getId(),
               Function.identity()));
 
-      // 6️⃣ Mapear a DTOs (sin consultas adicionales)
       List<MedicoResponseDto> medicosDto = usuariosPaginados.stream()
           .map(usuario -> {
             MedicoDetalle detalle = detallesMap.get(usuario.getId());
@@ -131,11 +134,69 @@ public class MedicoService {
       log.info("Se encontraron {} médicos activos en total, mostrando {} registros",
           todosLosUsuarios.size(), medicosDto.size());
 
-      // 7️⃣ Retornar Page con el total correcto
       return new PageImpl<>(medicosDto, pageable, todosLosUsuarios.size());
 
     } catch (Exception e) {
       log.error("Error al obtener médicos activos con búsqueda '{}'", search, e);
+      throw e;
+    }
+  }
+
+  @Transactional(readOnly = true)
+  public Page<MedicoResponseDto> getInactiveMedicos(String search, String searchType, Pageable pageable,
+      String especialidad) {
+
+    validator.validateEspecialidadExists(especialidad);
+    log.info("Obteniendo medicos Inactivos - Búsqueda: '{}', Tipo: '{}', Página: {}, Tamaño: {}, Especialidad:{}",
+        search != null ? search : "sin busqueda", searchType, pageable.getPageNumber(), pageable.getPageSize(),
+        especialidad != null ? especialidad : "todos");
+
+    try {
+      List<Usuario> todosLosUsuarios = usuarioRepository
+          .findUserByEstadoAndSearchWithProfiles(
+              false,
+              "MEDICO",
+              especialidad,
+              search,
+              searchType);
+
+      if (todosLosUsuarios.isEmpty()) {
+        log.info("No se encontraron médicos Inactivos");
+        return Page.empty(pageable);
+      }
+
+      // Aplicar paginación manualmente
+      int start = (int) pageable.getOffset();
+      int end = Math.min((start + pageable.getPageSize()), todosLosUsuarios.size());
+      List<Usuario> usuariosPaginados = todosLosUsuarios.subList(start, end);
+
+      List<Integer> usuarioIds = usuariosPaginados.stream()
+          .map(u -> u.getId())
+          .toList();
+
+      // Cargar TODOS los detalles en UNA SOLA consulta
+      List<MedicoDetalle> detalles = medicoDetalleRepository
+          .findByUsuarioIdsWithEspecialidad(usuarioIds);
+
+      Map<Integer, MedicoDetalle> detallesMap = detalles.stream()
+          .collect(Collectors.toMap(
+              d -> d.getUsuario().getId(),
+              Function.identity()));
+
+      List<MedicoResponseDto> medicosDto = usuariosPaginados.stream()
+          .map(usuario -> {
+            MedicoDetalle detalle = detallesMap.get(usuario.getId());
+            return MedicoMapper.toDto(usuario, detalle);
+          })
+          .toList();
+
+      log.info("Se encontraron {} médicos Inactivos en total, mostrando {} registros",
+          todosLosUsuarios.size(), medicosDto.size());
+
+      return new PageImpl<>(medicosDto, pageable, todosLosUsuarios.size());
+
+    } catch (Exception e) {
+      log.error("Error al obtener médicos Inactivos con búsqueda '{}'", search, e);
       throw e;
     }
   }

@@ -80,6 +80,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
             SELECT DISTINCT u FROM Usuario u
             LEFT JOIN FETCH u.perfiles p
             LEFT JOIN FETCH u.tipoDocumento
+            LEFT JOIN MedicoDetalle md ON md.usuario = u
+            LEFT JOIN md.especialidad e
             WHERE u.estadoRegistro = :estado
             AND EXISTS (
                 SELECT 1 FROM RolPerfil r
@@ -87,10 +89,15 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
                 AND UPPER(r.nombre) = UPPER(:rol)
             )
             AND (
+                :especialidad IS NULL OR :especialidad = '' OR
+                UPPER(e.nombreEspecialidad) = UPPER(:especialidad)
+            )
+            AND (
                 :search IS NULL OR :search = '' OR
                 (
                     CASE
                         WHEN :searchType = 'documento' THEN u.numeroDocumento LIKE CONCAT('%', :search, '%')
+                        WHEN :searchType = 'cmp' THEN md.cmp LIKE CONCAT('%', :search, '%')
                         ELSE (
                             LOWER(u.nombres) LIKE LOWER(CONCAT('%', :search, '%')) OR
                             LOWER(u.apellidos) LIKE LOWER(CONCAT('%', :search, '%'))
@@ -103,6 +110,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     List<Usuario> findUserByEstadoAndSearchWithProfiles(
             @Param("estado") Boolean estado,
             @Param("rol") String rol,
+            @Param("especialidad") String especialidad,
             @Param("search") String search,
             @Param("searchType") String searchType);
 
