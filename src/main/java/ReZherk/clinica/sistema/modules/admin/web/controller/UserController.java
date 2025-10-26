@@ -81,7 +81,7 @@ public class UserController {
       @RequestParam(defaultValue = "10") int size,
       @RequestParam(defaultValue = "id") String sortBy,
       @RequestParam(defaultValue = "ASC") String sortDirection,
-      @RequestParam(required = true) String rol) {
+      @RequestParam(required = false) String rol) {
 
     log.info("GET /api/user/inactive -search: '{}',page: {},size: {}, sortBy: {},sortDirection: {}",
         search != null ? search : "Sin busqueda", page, size, sortBy, sortDirection);

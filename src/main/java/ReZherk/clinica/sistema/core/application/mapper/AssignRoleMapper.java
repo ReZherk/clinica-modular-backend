@@ -1,5 +1,7 @@
 package ReZherk.clinica.sistema.core.application.mapper;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Component;
 
 import ReZherk.clinica.sistema.core.application.dto.UsuarioBaseDto;
@@ -34,17 +36,20 @@ public class AssignRoleMapper {
   // Entity -> DTO (para traer info al frontend)
   public AdminBaseDto toUserBaseDto(Usuario usuario) {
     AdminBaseDto dto = new AdminBaseDto();
-    dto.setTipoDocumentoId(usuario.getTipoDocumento().getId());
+
+    dto.setTipoDocumentoId(
+        Optional.ofNullable(usuario.getTipoDocumento())
+            .map(TipoDocumento::getId)
+            .orElse(null));
+
     dto.setNumeroDocumento(usuario.getNumeroDocumento());
-    dto.setTipoDocumentoId(usuario.getTipoDocumento().getId());
     dto.setNombres(usuario.getNombres());
     dto.setApellidos(usuario.getApellidos());
     dto.setEmail(usuario.getEmail());
     dto.setTelefono(usuario.getTelefono());
-
-    // Nunca exponer la contraseña al frontend
     dto.setPassword(null);
 
     return dto;
   }
+
 }
