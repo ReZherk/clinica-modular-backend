@@ -48,10 +48,13 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     @Query("""
                 SELECT DISTINCT u FROM Usuario u
                 WHERE u.estadoRegistro = :estado
-                AND EXISTS (
-                    SELECT 1 FROM RolPerfil r
-                    WHERE r MEMBER OF u.perfiles
-                    AND UPPER(r.nombre) = UPPER(:rol)
+                AND (
+                    :rol IS NULL OR :rol = '' OR
+                    EXISTS (
+                        SELECT 1 FROM RolPerfil r
+                        WHERE r MEMBER OF u.perfiles
+                        AND UPPER(r.nombre) = UPPER(:rol)
+                    )
                 )
                 AND (
                     :search IS NULL OR :search = '' OR

@@ -37,28 +37,28 @@ public class UserService {
 
   @Transactional(readOnly = true)
   public Page<UserResponseDto> getActiveUser(String search, String searchType, Pageable pageable, String rol) {
-
-    if (!rolPerfilRepository.existsByNombre(rol)) {
+    // Solo validar si se proporcionó un rol específico
+    if (rol != null && !rol.isEmpty() && !rolPerfilRepository.existsByNombre(rol)) {
       throw new RuntimeException("El rol '" + rol + "' no existe");
     }
 
     log.info("Obteniendo usuarios activos - Búsqueda: '{}', Tipo: '{}', Página: {}, Tamaño: {}, rol: {}",
-        search != null ? search : "sin busqueda", searchType, pageable.getPageNumber(), pageable.getPageSize(), rol);
+        search != null ? search : "sin busqueda", searchType, pageable.getPageNumber(), pageable.getPageSize(),
+        rol != null ? rol : "todos");
 
     try {
       Page<UserResponseDto> result = usuarioRepository
           .findUserByEstadoAndSearch(true, rol, search, searchType, pageable)
           .map(u -> UserMapper.toDTO(u, rol));
 
-      log.info("Se encontraron {} usuarios activos en total,mostrando {} registros", result.getTotalElements(),
-          result.getNumberOfElements());
+      log.info("Se encontraron {} usuarios activos en total, mostrando {} registros",
+          result.getTotalElements(), result.getNumberOfElements());
 
       return result;
     } catch (Exception e) {
       log.error("Error al obtener usuarios activos con busqueda '{}'", search, e);
       throw e;
     }
-
   }
 
   @Transactional(readOnly = true)
