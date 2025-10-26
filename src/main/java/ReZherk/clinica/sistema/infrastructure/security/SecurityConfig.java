@@ -92,6 +92,9 @@ public class SecurityConfig {
                 "/api/admin/user/{id}/deactivate")
             .hasAuthority("USER_MANAGE")
 
+            .requestMatchers("/api/admin/medicos/**")
+            .hasAuthority("DOCTOR_MANAGE")
+
             .requestMatchers(
                 "/api/admins/create-admin",
                 "/api/admins/activate",
