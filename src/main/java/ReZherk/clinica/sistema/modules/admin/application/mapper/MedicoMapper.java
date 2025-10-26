@@ -73,6 +73,8 @@ public class MedicoMapper {
         .especialidad(detalle != null && detalle.getEspecialidad() != null
             ? detalle.getEspecialidad().getNombreEspecialidad()
             : null)
+        .horasSemanales(detalle != null ? detalle.getHorasSemanales()
+            : null)
         .build();
   }
 }

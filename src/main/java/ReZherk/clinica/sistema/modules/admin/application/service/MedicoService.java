@@ -14,11 +14,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ReZherk.clinica.sistema.core.application.dto.UsuarioBaseDto;
 import ReZherk.clinica.sistema.core.application.mapper.AssignRoleMapper;
+import ReZherk.clinica.sistema.core.domain.entity.Especialidad;
 import ReZherk.clinica.sistema.core.domain.entity.MedicoDetalle;
 import ReZherk.clinica.sistema.core.domain.entity.Usuario;
 import ReZherk.clinica.sistema.core.domain.repository.MedicoDetalleRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.service.UsuarioRolService;
+import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePasswordRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.MedicoCreationDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
@@ -199,5 +201,64 @@ public class MedicoService {
       log.error("Error al obtener médicos Inactivos con búsqueda '{}'", search, e);
       throw e;
     }
+  }
+
+  public MedicoResponseDto obtenerMedicoPorId(Integer id) {
+    Usuario usuario = usuarioRepository.findById(id)
+        .filter(u -> u.getPerfiles().stream()
+            .anyMatch(rol -> rol.getNombre().equalsIgnoreCase("MEDICO")))
+        .orElseThrow(() -> new RuntimeException("Medico no encontrado con id: " + id));
+
+    MedicoDetalle detalle = medicoDetalleRepository.findById(usuario.getId())
+        .orElseThrow(() -> new RuntimeException("Detalle no encontrado para el médico con id: " + id));
+
+    return MedicoMapper.toDto(usuario, detalle);
+  }
+
+  @Transactional
+  public MedicoResponseDto modificarMedico(Integer id, MedicoCreationDto dto) {
+    Usuario usuario = validator.validateUsuarioEsMedico(id);
+
+    usuario.setNombres(dto.getNombres());
+    usuario.setApellidos(dto.getApellidos());
+    usuario.setEmail(dto.getEmail());
+    usuario.setTelefono(dto.getTelefono());
+
+    Usuario actualizado = usuarioRepository.save(usuario);
+
+    MedicoDetalle detalle = validator.validateDetalleDelMedico(id);
+
+    Especialidad especialidad = validator.validateEspecialidadExistsReturn(dto.getMedicoDetalle().getIdEspecialidad());
+
+    detalle.setEspecialidad(especialidad);
+
+    return MedicoMapper.toDto(actualizado, detalle);
+  }
+
+  @Transactional
+  public void cambiarPassword(Integer id, ChangePasswordRequestDto dto) {
+    Usuario usuario = validator.validateUsuarioEsMedico(id);
+
+    String newPasswordHash = passwordEncoder.encode(dto.getNewPassword());
+    usuario.setPasswordHash(newPasswordHash);
+
+    usuarioRepository.save(usuario);
+
+  }
+
+  public MedicoResponseDto activarMedico(Integer id) {
+    Usuario usuario = validator.validateUsuarioEsMedico(id);
+    usuario.setEstadoRegistro(true);
+
+    MedicoDetalle detalle = validator.validateDetalleDelMedico(id);
+    return MedicoMapper.toDto(usuario, detalle);
+  }
+
+  public MedicoResponseDto desactivarMedico(Integer id) {
+    Usuario usuario = validator.validateUsuarioEsMedico(id);
+    usuario.setEstadoRegistro(false);
+
+    MedicoDetalle detalle = validator.validateDetalleDelMedico(id);
+    return MedicoMapper.toDto(usuario, detalle);
   }
 }

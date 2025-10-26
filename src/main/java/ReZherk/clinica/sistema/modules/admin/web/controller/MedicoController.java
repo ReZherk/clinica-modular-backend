@@ -8,11 +8,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import ReZherk.clinica.sistema.core.application.dto.ApiResponse;
+import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePasswordRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.MedicoCreationDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
@@ -22,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
@@ -104,6 +108,44 @@ public class MedicoController {
    return ResponseEntity.internalServerError()
      .body(new ApiResponse<>(false, "Error al obtener medicos inactivos: " + e.getMessage(), null));
   }
+ }
+
+ @GetMapping("/{id}")
+ public ResponseEntity<ApiResponse<MedicoResponseDto>> getMedicoById(@PathVariable Integer id) {
+  MedicoResponseDto admin = medicoService.obtenerMedicoPorId(id);
+
+  return ResponseEntity.ok(new ApiResponse<>(true, "Se obtuvo satisfactoriamente el medico", admin));
+ }
+
+ @PutMapping("/{id}")
+ public ResponseEntity<ApiResponse<MedicoResponseDto>> updateMedico(
+   @PathVariable Integer id,
+   @RequestBody MedicoCreationDto data) {
+
+  MedicoResponseDto update = medicoService.modificarMedico(id, data);
+  return ResponseEntity.ok(new ApiResponse<>(true, "Se actualizo satisfactoriamente", update));
+ }
+
+ @PutMapping("/{id}/change-password")
+ public ResponseEntity<ApiResponse<Void>> changePassword(@PathVariable Integer id,
+   @RequestBody ChangePasswordRequestDto dto) {
+
+  medicoService.cambiarPassword(id, dto);
+
+  return ResponseEntity.ok(
+    new ApiResponse<>(true, "Contraseña actualizada exitosamente", null));
+ }
+
+ @PatchMapping("/{id}/activate")
+ public ResponseEntity<ApiResponse<MedicoResponseDto>> activateAdmin(@PathVariable Integer id) {
+  MedicoResponseDto activated = medicoService.activarMedico(id);
+  return ResponseEntity.ok(new ApiResponse<>(true, "Se activo el Medico correctamente", activated));
+ }
+
+ @PatchMapping("/{id}/deactivate")
+ public ResponseEntity<ApiResponse<MedicoResponseDto>> deactivateAdmin(@PathVariable Integer id) {
+  MedicoResponseDto disabled = medicoService.desactivarMedico(id);
+  return ResponseEntity.ok(new ApiResponse<>(true, "Medico desactivado", disabled));
  }
 
  // Contar médicos activos e inactivos
