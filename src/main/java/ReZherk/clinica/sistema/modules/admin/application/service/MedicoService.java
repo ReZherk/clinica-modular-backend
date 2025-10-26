@@ -17,6 +17,7 @@ import ReZherk.clinica.sistema.core.application.mapper.AssignRoleMapper;
 import ReZherk.clinica.sistema.core.domain.entity.Especialidad;
 import ReZherk.clinica.sistema.core.domain.entity.MedicoDetalle;
 import ReZherk.clinica.sistema.core.domain.entity.Usuario;
+import ReZherk.clinica.sistema.core.domain.repository.EspecialidadRepository;
 import ReZherk.clinica.sistema.core.domain.repository.MedicoDetalleRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.service.UsuarioRolService;
@@ -24,6 +25,8 @@ import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePassw
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.MedicoCreationDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtyResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.mapper.EspecialidadMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.MedicoDetalleMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.MedicoMapper;
 import ReZherk.clinica.sistema.modules.admin.application.validator.MedicoValidator;
@@ -42,6 +45,7 @@ public class MedicoService {
   private final UsuarioRepository usuarioRepository;
   private final MedicoDetalleRepository medicoDetalleRepository;
   private final UsuarioRolService usuarioRolService;
+  private final EspecialidadRepository especialidadRepository;
 
   @Transactional
   public void registrarMedico(MedicoCreationDto dto) {
@@ -260,5 +264,14 @@ public class MedicoService {
 
     MedicoDetalle detalle = validator.validateDetalleDelMedico(id);
     return MedicoMapper.toDto(usuario, detalle);
+  }
+
+  @Transactional(readOnly = true)
+  public List<SpecialtyResponseDto> listarEspecialidades(Boolean estado) {
+    return especialidadRepository.findByEstadoRegistroOrderByNombreEspecialidad(
+        estado)
+        .stream()
+        .map(EspecialidadMapper::toSimpleDto)
+        .toList();
   }
 }

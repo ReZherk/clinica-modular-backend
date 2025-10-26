@@ -1,6 +1,9 @@
 package ReZherk.clinica.sistema.modules.admin.web.controller;
 
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -19,6 +22,7 @@ import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePassw
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.MedicoCreationDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.CountResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.SpecialtyResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.service.MedicoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -146,6 +150,13 @@ public class MedicoController {
  public ResponseEntity<ApiResponse<MedicoResponseDto>> deactivateAdmin(@PathVariable Integer id) {
   MedicoResponseDto disabled = medicoService.desactivarMedico(id);
   return ResponseEntity.ok(new ApiResponse<>(true, "Medico desactivado", disabled));
+ }
+
+ @GetMapping("/specialty")
+ public ResponseEntity<ApiResponse<List<SpecialtyResponseDto>>> listActiveSpecialties() {
+
+  List<SpecialtyResponseDto> result = medicoService.listarEspecialidades(true);
+  return ResponseEntity.ok(new ApiResponse<>(true, "Se obtuvo exitosamente las especialidades activas", result));
  }
 
  // Contar médicos activos e inactivos
