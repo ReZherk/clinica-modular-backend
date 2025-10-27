@@ -76,6 +76,44 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
             @Param("searchType") String searchType,
             Pageable pageable);
 
+    //////////
+    @Query("""
+                SELECT DISTINCT u FROM Usuario u
+                WHERE u.estadoRegistro = :estado
+                AND (
+                    :rol IS NULL OR :rol = '' OR
+                    EXISTS (
+                        SELECT 1 FROM RolPerfil r
+                        WHERE r MEMBER OF u.perfiles
+                        AND UPPER(r.nombre) = UPPER(:rol)
+                    )
+                )
+                AND (
+                    :search IS NULL OR :search = '' OR
+                    (
+                        CASE
+                            WHEN :searchType = 'documento' THEN u.numeroDocumento LIKE CONCAT('%', :search, '%')
+                            ELSE (
+                                LOWER(u.nombres) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                                LOWER(u.apellidos) LIKE LOWER(CONCAT('%', :search, '%'))
+                            )
+                        END
+                    ) = true
+                )
+                AND NOT EXISTS (
+                    SELECT 1 FROM RolPerfil rp
+                    WHERE rp MEMBER OF u.perfiles
+                    AND UPPER(rp.nombre) IN ('MEDICO', 'PACIENTE', 'SUPERADMIN', 'ADMINISTRADOR')
+                )
+            """)
+    Page<Usuario> findAdministrativeUsers(
+            @Param("estado") Boolean estado,
+            @Param("rol") String rol,
+            @Param("search") String search,
+            @Param("searchType") String searchType,
+            Pageable pageable);
+
+    /////////////
     @Query("""
             SELECT DISTINCT u FROM Usuario u
             LEFT JOIN FETCH u.perfiles p

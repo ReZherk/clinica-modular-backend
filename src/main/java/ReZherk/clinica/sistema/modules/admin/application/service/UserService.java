@@ -1,5 +1,7 @@
 package ReZherk.clinica.sistema.modules.admin.application.service;
 
+import java.util.Set;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -50,7 +52,7 @@ public class UserService {
 
     try {
       Page<UserResponseDto> result = usuarioRepository
-          .findUserByEstadoAndSearch(true, rol, search, searchType, pageable)
+          .findAdministrativeUsers(true, rol, search, searchType, pageable)
           .map(u -> UserMapper.toDTO(u, rol));
 
       log.info("Se encontraron {} usuarios activos en total, mostrando {} registros",
@@ -72,7 +74,7 @@ public class UserService {
     try {
 
       Page<UserResponseDto> result = usuarioRepository
-          .findUserByEstadoAndSearch(false, rol, search,
+          .findAdministrativeUsers(false, rol, search,
               searchType, pageable)
           .map(U -> UserMapper.toDTO(U, rol));
       log.info("Se encontraron {} usuarios inactivos en total, mostrando {} registros",
@@ -90,6 +92,14 @@ public class UserService {
 
     RolPerfil rol = rolPerfilRepository.findById(dto.getIdRol())
         .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado"));
+
+    // Validar que no se intente asignar roles restringidos
+    Set<String> rolesRestringidos = Set.of("SUPERADMIN", "ADMINISTRADOR", "MEDICO");
+
+    if (rolesRestringidos.contains(rol.getNombre().toUpperCase())) {
+      throw new IllegalArgumentException(
+          "No se puede asignar el rol " + rol.getNombre());
+    }
 
     Usuario user = createUsuarioBase(dto);
 

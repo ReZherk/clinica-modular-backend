@@ -50,8 +50,20 @@ public class UsuarioRolService {
         .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado: " + roleName));
   }
 
+  private static final Set<String> ROLES_RESTRINGIDOS = Set.of(
+      "SUPERADMIN",
+      "ADMINISTRADOR",
+      "MEDICO");
+
   public void assignRoleToUserById(Usuario usuario, Integer idRol) {
     RolPerfil rol = findRolById(idRol);
+
+    if (ROLES_RESTRINGIDOS.contains(rol.getNombre().toUpperCase())) {
+      throw new IllegalArgumentException(
+          "No se puede asignar el rol '" + rol.getNombre() +
+              "'. Este rol está restringido.");
+    }
+
     Set<RolPerfil> roles = new HashSet<>();
     roles.add(rol);
     usuario.setPerfiles(roles);
