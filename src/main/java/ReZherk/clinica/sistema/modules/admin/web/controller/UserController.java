@@ -143,6 +143,14 @@ public class UserController {
     return ResponseEntity.ok(new ApiResponse<>(true, "Se obtuvo satisfactoriamente el usuario", result));
   }
 
+  @PutMapping("/{id}")
+  public ResponseEntity<ApiResponse<Void>> updateUsuario(@PathVariable Integer id,
+      @RequestBody AssignRoleToUserRequestDto data) {
+    userService.modificarUsuario(id, data);
+
+    return ResponseEntity.ok(new ApiResponse<>(true, "Se actualizo satisfactoriamente el usuario", null));
+  }
+
   @PutMapping("/{id}/change-password")
   public ResponseEntity<ApiResponse<Void>> changePassword(@PathVariable Integer id,
       @RequestBody ChangePasswordRequestDto dto) {

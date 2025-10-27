@@ -15,6 +15,7 @@ import ReZherk.clinica.sistema.core.domain.repository.RolPerfilRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioPerfilRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
+import ReZherk.clinica.sistema.core.shared.service.UsuarioRolService;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.AssignRoleToUserRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePasswordRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.UserResponseDto;
@@ -34,6 +35,7 @@ public class UserService {
   private final AssignRoleMapper assignRoleMapper;
   private final PasswordEncoder passwordEncoder;
   private final UsuarioPerfilRepository usuarioPerfilRepository;
+  private final UsuarioRolService usuarioRolService;
 
   @Transactional(readOnly = true)
   public Page<UserResponseDto> getActiveUser(String search, String searchType, Pageable pageable, String rol) {
@@ -127,6 +129,31 @@ public class UserService {
         .usuario(dto)
         .rolActual(rolActual)
         .build();
+  }
+
+  @Transactional
+  public UserResponseDto modificarUsuario(Integer id, AssignRoleToUserRequestDto dto) {
+    Usuario usuario = usuarioRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+    usuario.setNombres(dto.getNombres());
+    usuario.setApellidos(dto.getApellidos());
+    usuario.setEmail(dto.getEmail());
+    usuario.setTelefono(dto.getTelefono());
+
+    // Modificar el rol del usuario usando el ID del rol
+    if (dto.getIdRol() != null) {
+      usuarioRolService.assignRoleToUserById(usuario, dto.getIdRol());
+    }
+
+    Usuario actualizado = usuarioRepository.save(usuario);
+
+    // Obtener el nombre del rol para el DTO de respuesta
+    String roleName = actualizado.getPerfiles().isEmpty()
+        ? "SIN_ROL"
+        : actualizado.getPerfiles().iterator().next().getNombre();
+
+    return UserMapper.toDTO(actualizado, roleName);
   }
 
   @Transactional

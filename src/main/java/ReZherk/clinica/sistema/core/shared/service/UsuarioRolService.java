@@ -15,39 +15,51 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UsuarioRolService {
 
- private final RolPerfilRepository rolPerfilRepository;
+  private final RolPerfilRepository rolPerfilRepository;
 
- public void assignRoleToUser(Usuario usuario, String roleName) {
-  RolPerfil rol = findRolByName(roleName);
+  public void assignRoleToUser(Usuario usuario, String roleName) {
+    RolPerfil rol = findRolByName(roleName);
 
-  Set<RolPerfil> roles = new HashSet<>();
-  roles.add(rol);
-  usuario.setPerfiles(roles);
- }
-
- public void assignRolesToUser(Usuario usuario, Set<String> roleNames) {
-  Set<RolPerfil> roles = new HashSet<>();
-
-  for (String roleName : roleNames) {
-   RolPerfil rol = findRolByName(roleName);
-   roles.add(rol);
+    Set<RolPerfil> roles = new HashSet<>();
+    roles.add(rol);
+    usuario.setPerfiles(roles);
   }
 
-  usuario.setPerfiles(roles);
- }
+  public void assignRolesToUser(Usuario usuario, Set<String> roleNames) {
+    Set<RolPerfil> roles = new HashSet<>();
 
- public void addRoleToUser(Usuario usuario, String roleName) {
-  RolPerfil rol = findRolByName(roleName);
-  usuario.getPerfiles().add(rol);
- }
+    for (String roleName : roleNames) {
+      RolPerfil rol = findRolByName(roleName);
+      roles.add(rol);
+    }
 
- public void removeRoleFromUser(Usuario usuario, String roleName) {
-  usuario.getPerfiles().removeIf(rol -> rol.getNombre().equals(roleName));
- }
+    usuario.setPerfiles(roles);
+  }
 
- private RolPerfil findRolByName(String roleName) {
-  return rolPerfilRepository.findByNombre(roleName)
-    .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado: " + roleName));
- }
+  public void addRoleToUser(Usuario usuario, String roleName) {
+    RolPerfil rol = findRolByName(roleName);
+    usuario.getPerfiles().add(rol);
+  }
+
+  public void removeRoleFromUser(Usuario usuario, String roleName) {
+    usuario.getPerfiles().removeIf(rol -> rol.getNombre().equals(roleName));
+  }
+
+  private RolPerfil findRolByName(String roleName) {
+    return rolPerfilRepository.findByNombre(roleName)
+        .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado: " + roleName));
+  }
+
+  public void assignRoleToUserById(Usuario usuario, Integer idRol) {
+    RolPerfil rol = findRolById(idRol);
+    Set<RolPerfil> roles = new HashSet<>();
+    roles.add(rol);
+    usuario.setPerfiles(roles);
+  }
+
+  private RolPerfil findRolById(Integer idRol) {
+    return rolPerfilRepository.findById(idRol)
+        .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con ID: " + idRol));
+  }
 
 }
