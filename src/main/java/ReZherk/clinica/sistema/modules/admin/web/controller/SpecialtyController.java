@@ -71,7 +71,7 @@ public class SpecialtyController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<ApiResponse<SpecialtyUpdateResponseDto>> actualizarEspecialidad(
+  public ResponseEntity<ApiResponse<SpecialtyUpdateResponseDto>> updateEspecialidad(
       @PathVariable Integer id,
       @RequestBody SpecialtyUpdateDto dto) {
 

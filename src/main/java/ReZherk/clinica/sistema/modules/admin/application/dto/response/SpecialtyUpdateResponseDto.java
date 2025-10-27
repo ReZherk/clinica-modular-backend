@@ -13,5 +13,6 @@ public class SpecialtyUpdateResponseDto {
  private String nombreEspecialidad;
  private String descripcion;
  private BigDecimal tarifa;
+ private Byte duracion;
  private Boolean estadoRegistro;
 }

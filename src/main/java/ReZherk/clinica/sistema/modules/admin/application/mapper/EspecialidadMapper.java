@@ -67,9 +67,15 @@ public class EspecialidadMapper {
     if (dto.getTarifa() != null) {
       entity.setTarifa(dto.getTarifa());
     }
+
+    if (dto.getDuracion() != null) {
+      entity.setDuracion(dto.getDuracion());
+    }
+
     if (dto.getEstadoRegistro() != null) {
       entity.setEstadoRegistro(dto.getEstadoRegistro());
     }
+
   }
 
   public static SpecialtyUpdateResponseDto toUpdateResponseDto(Especialidad entity) {
@@ -78,6 +84,7 @@ public class EspecialidadMapper {
         .nombreEspecialidad(entity.getNombreEspecialidad())
         .descripcion(entity.getDescripcion())
         .tarifa(entity.getTarifa())
+        .duracion(entity.getDuracion())
         .estadoRegistro(entity.getEstadoRegistro())
         .build();
   }
