@@ -132,10 +132,17 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
                 SELECT 1 FROM RolPerfil r
                 WHERE r MEMBER OF u.perfiles
                 AND UPPER(r.nombre) = UPPER(:rol)
+                AND r.estadoRegistro = true
+            )
+            AND EXISTS (
+                SELECT 1 FROM MedicoDetalle md2
+                JOIN md2.especialidad esp
+                WHERE md2.usuario = u
+                AND esp.estadoRegistro = true
             )
             AND (
                 :especialidad IS NULL OR :especialidad = '' OR
-                UPPER(e.nombreEspecialidad) = UPPER(:especialidad)
+                (UPPER(e.nombreEspecialidad) = UPPER(:especialidad) AND e.estadoRegistro = true)
             )
             AND (
                 :search IS NULL OR :search = '' OR

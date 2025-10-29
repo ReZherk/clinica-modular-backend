@@ -49,7 +49,11 @@ public class MedicoService {
 
   @Transactional
   public void registrarMedico(MedicoCreationDto dto) {
-    validator.validateForCreation(dto.getEmail(), dto.getNumeroDocumento(), dto.getMedicoDetalle().getCmp(),
+    // Validaciones incluyen verificación de especialidad activa
+    validator.validateForCreation(
+        dto.getEmail(),
+        dto.getNumeroDocumento(),
+        dto.getMedicoDetalle().getCmp(),
         dto.getMedicoDetalle().getIdEspecialidad());
 
     Usuario medico = createUsuarioBase(dto);
@@ -59,23 +63,20 @@ public class MedicoService {
     MedicoDetalle medicoDetalle = medicoDetalleMapper.toEntity(dto.getMedicoDetalle(), savedMedico);
     medicoDetalleRepository.save(medicoDetalle);
 
+    log.info(" Médico creado exitosamente con especialidad activa");
   }
 
   private Usuario createUsuarioBase(UsuarioBaseDto dto) {
     Usuario user = assignRoleMapper.toEntity(dto);
-
-    // BCrypt maneja internamente el salt, no necesitas generarlo
     String hashedPassword = passwordEncoder.encode(dto.getPassword());
     user.setPasswordHash(hashedPassword);
-
     return user;
   }
 
-  ////////
   public CountResponse contarMedicosActivosInactivos() {
     List<Usuario> medicos = usuarioRepository.findAll().stream()
         .filter(u -> u.getPerfiles().stream()
-            .anyMatch(p -> p.getNombre().equalsIgnoreCase("MEDICO")))
+            .anyMatch(p -> p.getNombre().equalsIgnoreCase("MEDICO") && p.getEstadoRegistro()))
         .toList();
 
     long activos = medicos.stream().filter(Usuario::getEstadoRegistro).count();
@@ -87,18 +88,19 @@ public class MedicoService {
         .build();
   }
 
-  ////////
-
   @Transactional(readOnly = true)
   public Page<MedicoResponseDto> getActiveMedicos(String search, String searchType, Pageable pageable,
       String especialidad) {
 
     validator.validateEspecialidadExists(especialidad);
-    log.info("Obteniendo medicos activos - Búsqueda: '{}', Tipo: '{}', Página: {}, Tamaño: {}, Especialidad:{}",
-        search != null ? search : "sin busqueda", searchType, pageable.getPageNumber(), pageable.getPageSize(),
+
+    log.info("Obteniendo médicos activos CON ESPECIALIDAD ACTIVA - Búsqueda: '{}', Tipo: '{}', Especialidad: '{}'",
+        search != null ? search : "sin busqueda",
+        searchType,
         especialidad != null ? especialidad : "todos");
 
     try {
+      // Esta query ya filtra médicos con especialidad activa
       List<Usuario> todosLosUsuarios = usuarioRepository
           .findUserByEstadoAndSearchWithProfiles(
               true,
@@ -108,7 +110,7 @@ public class MedicoService {
               searchType);
 
       if (todosLosUsuarios.isEmpty()) {
-        log.info("No se encontraron médicos activos");
+        log.info("No se encontraron médicos activos con especialidad activa");
         return Page.empty(pageable);
       }
 
@@ -118,7 +120,7 @@ public class MedicoService {
       List<Usuario> usuariosPaginados = todosLosUsuarios.subList(start, end);
 
       List<Integer> usuarioIds = usuariosPaginados.stream()
-          .map(u -> u.getId())
+          .map(Usuario::getId)
           .toList();
 
       // Cargar TODOS los detalles en UNA SOLA consulta
@@ -137,13 +139,13 @@ public class MedicoService {
           })
           .toList();
 
-      log.info("Se encontraron {} médicos activos en total, mostrando {} registros",
-          todosLosUsuarios.size(), medicosDto.size());
+      log.info(" Se encontraron {} médicos activos con especialidad activa de {} totales",
+          medicosDto.size(), todosLosUsuarios.size());
 
       return new PageImpl<>(medicosDto, pageable, todosLosUsuarios.size());
 
     } catch (Exception e) {
-      log.error("Error al obtener médicos activos con búsqueda '{}'", search, e);
+      log.error("✗ Error al obtener médicos activos con búsqueda '{}'", search, e);
       throw e;
     }
   }
@@ -152,9 +154,9 @@ public class MedicoService {
   public Page<MedicoResponseDto> getInactiveMedicos(String search, String searchType, Pageable pageable,
       String especialidad) {
 
-    validator.validateEspecialidadExists(especialidad);
-    log.info("Obteniendo medicos Inactivos - Búsqueda: '{}', Tipo: '{}', Página: {}, Tamaño: {}, Especialidad:{}",
-        search != null ? search : "sin busqueda", searchType, pageable.getPageNumber(), pageable.getPageSize(),
+    log.info("Obteniendo médicos inactivos - Búsqueda: '{}', Tipo: '{}', Especialidad: '{}'",
+        search != null ? search : "sin busqueda",
+        searchType,
         especialidad != null ? especialidad : "todos");
 
     try {
@@ -167,7 +169,7 @@ public class MedicoService {
               searchType);
 
       if (todosLosUsuarios.isEmpty()) {
-        log.info("No se encontraron médicos Inactivos");
+        log.info("No se encontraron médicos inactivos");
         return Page.empty(pageable);
       }
 
@@ -177,7 +179,7 @@ public class MedicoService {
       List<Usuario> usuariosPaginados = todosLosUsuarios.subList(start, end);
 
       List<Integer> usuarioIds = usuariosPaginados.stream()
-          .map(u -> u.getId())
+          .map(Usuario::getId)
           .toList();
 
       // Cargar TODOS los detalles en UNA SOLA consulta
@@ -196,13 +198,13 @@ public class MedicoService {
           })
           .toList();
 
-      log.info("Se encontraron {} médicos Inactivos en total, mostrando {} registros",
-          todosLosUsuarios.size(), medicosDto.size());
+      log.info("Se encontraron {} médicos inactivos de {} totales",
+          medicosDto.size(), todosLosUsuarios.size());
 
       return new PageImpl<>(medicosDto, pageable, todosLosUsuarios.size());
 
     } catch (Exception e) {
-      log.error("Error al obtener médicos Inactivos con búsqueda '{}'", search, e);
+      log.error(" Error al obtener médicos inactivos con búsqueda '{}'", search, e);
       throw e;
     }
   }
@@ -210,11 +212,11 @@ public class MedicoService {
   public MedicoResponseDto obtenerMedicoPorId(Integer id) {
     Usuario usuario = usuarioRepository.findById(id)
         .filter(u -> u.getPerfiles().stream()
-            .anyMatch(rol -> rol.getNombre().equalsIgnoreCase("MEDICO")))
-        .orElseThrow(() -> new RuntimeException("Medico no encontrado con id: " + id));
+            .anyMatch(rol -> rol.getNombre().equalsIgnoreCase("MEDICO") && rol.getEstadoRegistro()))
+        .orElseThrow(() -> new RuntimeException("Médico no encontrado con id: " + id + " o rol inactivo"));
 
-    MedicoDetalle detalle = medicoDetalleRepository.findById(usuario.getId())
-        .orElseThrow(() -> new RuntimeException("Detalle no encontrado para el médico con id: " + id));
+    // validateDetalleDelMedico ya verifica que la especialidad esté activa
+    MedicoDetalle detalle = validator.validateDetalleDelMedico(usuario.getId());
 
     return MedicoMapper.toDto(usuario, detalle);
   }
@@ -232,9 +234,13 @@ public class MedicoService {
 
     MedicoDetalle detalle = validator.validateDetalleDelMedico(id);
 
+    // validateEspecialidadExistsReturn ya verifica que esté activa
     Especialidad especialidad = validator.validateEspecialidadExistsReturn(dto.getMedicoDetalle().getIdEspecialidad());
 
     detalle.setEspecialidad(especialidad);
+    medicoDetalleRepository.save(detalle);
+
+    log.info("Médico actualizado con especialidad activa: {}", especialidad.getNombreEspecialidad());
 
     return MedicoMapper.toDto(actualizado, detalle);
   }
@@ -247,20 +253,23 @@ public class MedicoService {
     usuario.setPasswordHash(newPasswordHash);
 
     usuarioRepository.save(usuario);
-
   }
 
+  @Transactional
   public MedicoResponseDto activarMedico(Integer id) {
     Usuario usuario = validator.validateUsuarioEsMedico(id);
     usuario.setEstadoRegistro(true);
+    usuarioRepository.save(usuario);
 
     MedicoDetalle detalle = validator.validateDetalleDelMedico(id);
     return MedicoMapper.toDto(usuario, detalle);
   }
 
+  @Transactional
   public MedicoResponseDto desactivarMedico(Integer id) {
     Usuario usuario = validator.validateUsuarioEsMedico(id);
     usuario.setEstadoRegistro(false);
+    usuarioRepository.save(usuario);
 
     MedicoDetalle detalle = validator.validateDetalleDelMedico(id);
     return MedicoMapper.toDto(usuario, detalle);
@@ -268,8 +277,7 @@ public class MedicoService {
 
   @Transactional(readOnly = true)
   public List<SpecialtyResponseDto> listarEspecialidades(Boolean estado) {
-    return especialidadRepository.findByEstadoRegistroOrderByNombreEspecialidad(
-        estado)
+    return especialidadRepository.findByEstadoRegistroOrderByNombreEspecialidad(estado)
         .stream()
         .map(EspecialidadMapper::toSimpleDto)
         .toList();
