@@ -238,6 +238,8 @@ public class MedicoService {
     Especialidad especialidad = validator.validateEspecialidadExistsReturn(dto.getMedicoDetalle().getIdEspecialidad());
 
     detalle.setEspecialidad(especialidad);
+    detalle.setCmp(dto.getMedicoDetalle().getCmp());
+    detalle.setHorasSemanales(dto.getMedicoDetalle().getHorasSemanales());
     medicoDetalleRepository.save(detalle);
 
     log.info("Médico actualizado con especialidad activa: {}", especialidad.getNombreEspecialidad());
