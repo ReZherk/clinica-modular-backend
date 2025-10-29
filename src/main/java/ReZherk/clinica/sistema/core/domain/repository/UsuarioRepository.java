@@ -79,13 +79,20 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     //////////
     @Query("""
                 SELECT DISTINCT u FROM Usuario u
+                LEFT JOIN FETCH u.perfiles rp
                 WHERE u.estadoRegistro = :estado
+                AND EXISTS (
+                    SELECT 1 FROM RolPerfil r
+                    WHERE r MEMBER OF u.perfiles
+                    AND r.estadoRegistro = true
+                )
                 AND (
                     :rol IS NULL OR :rol = '' OR
                     EXISTS (
                         SELECT 1 FROM RolPerfil r
                         WHERE r MEMBER OF u.perfiles
                         AND UPPER(r.nombre) = UPPER(:rol)
+                        AND r.estadoRegistro = true
                     )
                 )
                 AND (
@@ -101,9 +108,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
                     ) = true
                 )
                 AND NOT EXISTS (
-                    SELECT 1 FROM RolPerfil rp
-                    WHERE rp MEMBER OF u.perfiles
-                    AND UPPER(rp.nombre) IN ('MEDICO', 'PACIENTE', 'SUPERADMIN', 'ADMINISTRADOR')
+                    SELECT 1 FROM RolPerfil rp2
+                    WHERE rp2 MEMBER OF u.perfiles
+                    AND UPPER(rp2.nombre) IN ('MEDICO', 'PACIENTE', 'SUPERADMIN', 'ADMINISTRADOR')
                 )
             """)
     Page<Usuario> findAdministrativeUsers(
@@ -160,4 +167,18 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
             WHERE u.numeroDocumento = :numeroDocumento
             """)
     Optional<Usuario> findByNumeroDocumentoWithRolesAndPermissions(@Param("numeroDocumento") String numeroDocumento);
+
+    //////////////
+    @Query("""
+                SELECT DISTINCT u FROM Usuario u
+                LEFT JOIN FETCH u.perfiles r
+                LEFT JOIN FETCH r.permisos
+                WHERE u.id = :id
+                AND EXISTS (
+                    SELECT 1 FROM RolPerfil rol
+                    WHERE rol MEMBER OF u.perfiles
+                    AND rol.estadoRegistro = true
+                )
+            """)
+    Optional<Usuario> findByIdWithActiveRoles(@Param("id") Integer id);
 }

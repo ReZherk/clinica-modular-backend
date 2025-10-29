@@ -41,13 +41,21 @@ public class UserService {
 
   @Transactional(readOnly = true)
   public Page<UserResponseDto> getActiveUser(String search, String searchType, Pageable pageable, String rol) {
-    // Solo validar si se proporcionó un rol específico
-    if (rol != null && !rol.isEmpty() && !rolPerfilRepository.existsByNombre(rol)) {
-      throw new RuntimeException("El rol '" + rol + "' no existe");
+    // Validar rol si se especificó
+    if (rol != null && !rol.isEmpty()) {
+      RolPerfil rolPerfil = rolPerfilRepository.findByNombre(rol)
+          .orElseThrow(() -> new RuntimeException("El rol '" + rol + "' no existe"));
+
+      // Verificar que el rol esté activo
+      if (!rolPerfil.getEstadoRegistro()) {
+        log.warn("Se intentó filtrar por el rol inactivo: {}", rol);
+        throw new RuntimeException("El rol '" + rol + "' está inactivo");
+      }
     }
 
-    log.info("Obteniendo usuarios activos - Búsqueda: '{}', Tipo: '{}', Página: {}, Tamaño: {}, rol: {}",
-        search != null ? search : "sin busqueda", searchType, pageable.getPageNumber(), pageable.getPageSize(),
+    log.info("Obteniendo usuarios activos CON ROLES ACTIVOS - Búsqueda: '{}', Tipo: '{}', Rol: '{}'",
+        search != null ? search : "sin busqueda",
+        searchType,
         rol != null ? rol : "todos");
 
     try {
@@ -55,18 +63,28 @@ public class UserService {
           .findAdministrativeUsers(true, rol, search, searchType, pageable)
           .map(u -> UserMapper.toDTO(u, rol));
 
-      log.info("Se encontraron {} usuarios activos en total, mostrando {} registros",
-          result.getTotalElements(), result.getNumberOfElements());
+      log.info("Se encontraron {} usuarios activos con roles activos de {} totales",
+          result.getNumberOfElements(), result.getTotalElements());
 
       return result;
     } catch (Exception e) {
-      log.error("Error al obtener usuarios activos con busqueda '{}'", search, e);
+      log.error(" Error al obtener usuarios activos con búsqueda '{}'", search, e);
       throw e;
     }
   }
 
   @Transactional(readOnly = true)
   public Page<UserResponseDto> getInactiveUser(String search, String searchType, Pageable pageable, String rol) {
+
+    if (rol != null && !rol.isEmpty()) {
+      RolPerfil rolPerfil = rolPerfilRepository.findByNombre(rol)
+          .orElseThrow(() -> new RuntimeException("El rol '" + rol + "' no existe"));
+
+      if (!rolPerfil.getEstadoRegistro()) {
+        log.warn("Se intentó filtrar por el rol inactivo: {}", rol);
+        throw new RuntimeException("El rol '" + rol + "' está inactivo");
+      }
+    }
 
     log.info("Obteniendo usuarios inactivos - busqueda: '{}' , pagina: '{}' ,Tamaño: '{}'",
         search != null ? search : "Sin busqueda", pageable.getPageNumber(), pageable.getPageSize());
@@ -92,6 +110,11 @@ public class UserService {
 
     RolPerfil rol = rolPerfilRepository.findById(dto.getIdRol())
         .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado"));
+
+    if (!rol.getEstadoRegistro()) {
+      throw new IllegalArgumentException(
+          "No se puede asignar el rol '" + rol.getNombre() + "' porque está inactivo");
+    }
 
     // Validar que no se intente asignar roles restringidos
     Set<String> rolesRestringidos = Set.of("SUPERADMIN", "ADMINISTRADOR", "MEDICO");
@@ -125,13 +148,20 @@ public class UserService {
   }
 
   public UsuarioWithRoleResponse obtenerUsuarioPorId(Integer id) {
-    Usuario usuario = usuarioRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+
+    Usuario usuario = usuarioRepository.findByIdWithActiveRoles(id)
+        .orElseGet(() -> {
+
+          log.warn("Usuario {} no tiene roles activos o no existe", id);
+          return usuarioRepository.findById(id)
+              .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+        });
 
     String rolActual = usuario.getPerfiles().stream()
+        .filter(RolPerfil::getEstadoRegistro)
         .map(RolPerfil::getNombre)
         .findFirst()
-        .orElse("SIN ROL");
+        .orElse("SIN ROL ACTIVO");
 
     UsuarioBaseDto dto = assignRoleMapper.toUserBaseDto(usuario);
 
@@ -151,17 +181,26 @@ public class UserService {
     usuario.setEmail(dto.getEmail());
     usuario.setTelefono(dto.getTelefono());
 
-    // Modificar el rol del usuario usando el ID del rol
     if (dto.getIdRol() != null) {
+      // Verificar que el nuevo rol esté activo
+      RolPerfil nuevoRol = rolPerfilRepository.findById(dto.getIdRol())
+          .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado"));
+
+      if (!nuevoRol.getEstadoRegistro()) {
+        throw new IllegalArgumentException(
+            "No se puede asignar el rol '" + nuevoRol.getNombre() + "' porque está inactivo");
+      }
+
       usuarioRolService.assignRoleToUserById(usuario, dto.getIdRol());
     }
 
     Usuario actualizado = usuarioRepository.save(usuario);
 
-    // Obtener el nombre del rol para el DTO de respuesta
-    String roleName = actualizado.getPerfiles().isEmpty()
-        ? "SIN_ROL"
-        : actualizado.getPerfiles().iterator().next().getNombre();
+    String roleName = actualizado.getPerfiles().stream()
+        .filter(RolPerfil::getEstadoRegistro)
+        .map(RolPerfil::getNombre)
+        .findFirst()
+        .orElse("SIN_ROL_ACTIVO");
 
     return UserMapper.toDTO(actualizado, roleName);
   }
