@@ -126,7 +126,7 @@ src/main/resources/db/migration/
 ```
 
 - Flyway ejecuta automáticamente las migraciones al iniciar la aplicación
-- El esquema de base de datos está versionado
+- El esquema de base de datos está versionado.
 
 ## 🚀 Despliegue
 
