@@ -5,9 +5,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import ReZherk.clinica.sistema.core.domain.entity.MedicoHorario;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,11 +16,11 @@ public interface MedicoHorarioRepository extends JpaRepository<MedicoHorario, In
  @Query("SELECT mh FROM MedicoHorario mh " +
    "JOIN FETCH mh.medico m " +
    "JOIN FETCH mh.horario h " +
-   "WHERE m.idUsuario = :idMedico AND mh.estado = 'ACTIVO'")
+   "WHERE m.id = :idMedico AND mh.estado = 'ACTIVO'")
  List<MedicoHorario> findByMedicoIdAndEstadoActivo(@Param("idMedico") Integer idMedico);
 
  @Query("SELECT mh FROM MedicoHorario mh " +
-   "WHERE mh.medico.idUsuario = :idMedico " +
+   "WHERE mh.medico.id = :idMedico " +
    "AND mh.horario.idHorario = :idHorario " +
    "AND mh.estado = 'ACTIVO'")
  Optional<MedicoHorario> findByMedicoAndHorarioAndEstadoActivo(
@@ -30,7 +28,7 @@ public interface MedicoHorarioRepository extends JpaRepository<MedicoHorario, In
    @Param("idHorario") Integer idHorario);
 
  @Modifying
- @Query("UPDATE MedicoHorario mh SET mh.estado = 'INACTIVO' WHERE mh.medico.idUsuario = :idMedico")
+ @Query("UPDATE MedicoHorario mh SET mh.estado = 'INACTIVO' WHERE mh.medico.id = :idMedico")
  void deactivateAllByMedicoId(@Param("idMedico") Integer idMedico);
 
  @Modifying
@@ -38,7 +36,7 @@ public interface MedicoHorarioRepository extends JpaRepository<MedicoHorario, In
  void deactivateById(@Param("id") Integer id);
 
  @Query("SELECT COUNT(mh) > 0 FROM MedicoHorario mh " +
-   "WHERE mh.medico.idUsuario = :idMedico " +
+   "WHERE mh.medico.id = :idMedico " +
    "AND mh.horario.idHorario = :idHorario " +
    "AND mh.estado = 'ACTIVO'")
  boolean existsByMedicoAndHorarioActivo(
