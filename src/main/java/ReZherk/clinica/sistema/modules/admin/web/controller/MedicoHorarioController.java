@@ -27,109 +27,117 @@ import java.util.List;
 @Tag(name = "Gestión de Horarios Médicos", description = "Endpoints para administrar horarios de médicos")
 public class MedicoHorarioController {
 
- private final MedicoHorarioService medicoHorarioService;
+  private final MedicoHorarioService medicoHorarioService;
 
- @PostMapping("/asignar")
- @Operation(summary = "Asignar horarios a un médico", description = "Asigna bloques horarios a un médico específico. Los horarios anteriores se desactivan.")
- public ResponseEntity<ApiResponse<MedicoHorarioAsignacionResponseDto>> asignarHorarios(
-   @Valid @RequestBody AsignarHorariosRequestDto request) {
+  @GetMapping("/{horas}")
+  public ResponseEntity<ApiResponse<List<HorarioResponseDto>>> getHorariosPorTipo(@PathVariable int horas) {
 
-  log.info("POST /api/admin/medico-horarios/asignar - Asignando horarios al médico ID: {}",
-    request.getIdMedico());
+    List<HorarioResponseDto> response = medicoHorarioService.obtenerHorariosPorTipo(horas);
+    return ResponseEntity
+        .ok(new ApiResponse<>(true, "Se encontraron horarios que coincidan para: " + horas + " horas", response));
+  }
 
-  MedicoHorarioAsignacionResponseDto response = medicoHorarioService.asignarHorarios(request);
+  @PostMapping("/asignar")
+  @Operation(summary = "Asignar horarios a un médico", description = "Asigna bloques horarios a un médico específico. Los horarios anteriores se desactivan.")
+  public ResponseEntity<ApiResponse<MedicoHorarioAsignacionResponseDto>> asignarHorarios(
+      @Valid @RequestBody AsignarHorariosRequestDto request) {
 
-  return ResponseEntity
-    .status(HttpStatus.CREATED)
-    .body(new ApiResponse<>(true, "Se asigno exitosamente los horarios.", response));
- }
+    log.info("POST /api/admin/medico-horarios/asignar - Asignando horarios al médico ID: {}",
+        request.getIdMedico());
 
- @GetMapping("/con-horarios")
- public ResponseEntity<ApiResponse<MedicoHorarioPaginatedResponseDto>> buscarMedicosConHorarios(
-   @Parameter(description = "Nombre o apellido del médico") @RequestParam(required = false) String nombre,
+    MedicoHorarioAsignacionResponseDto response = medicoHorarioService.asignarHorarios(request);
 
-   @Parameter(description = "Número de documento (DNI)") @RequestParam(required = false) String dni,
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(new ApiResponse<>(true, "Se asigno exitosamente los horarios.", response));
+  }
 
-   @Parameter(description = "Código de Colegio Médico del Perú") @RequestParam(required = false) String cmp,
+  @GetMapping("/con-horarios")
+  public ResponseEntity<ApiResponse<MedicoHorarioPaginatedResponseDto>> buscarMedicosConHorarios(
+      @Parameter(description = "Nombre o apellido del médico") @RequestParam(required = false) String nombre,
 
-   @Parameter(description = "Nombre de la especialidad") @RequestParam(required = false) String especialidad,
+      @Parameter(description = "Número de documento (DNI)") @RequestParam(required = false) String dni,
 
-   @Parameter(description = "Número de página (inicia en 0)") @RequestParam(defaultValue = "0") Integer page,
+      @Parameter(description = "Código de Colegio Médico del Perú") @RequestParam(required = false) String cmp,
 
-   @Parameter(description = "Tamaño de página") @RequestParam(defaultValue = "10") Integer size) {
+      @Parameter(description = "Nombre de la especialidad") @RequestParam(required = false) String especialidad,
 
-  log.info(
-    "GET /api/admin/medico-horarios/con-horarios - Filtros: nombre={}, dni={}, cmp={}, especialidad={}, page={}, size={}",
-    nombre, dni, cmp, especialidad, page, size);
+      @Parameter(description = "Número de página (inicia en 0)") @RequestParam(defaultValue = "0") Integer page,
 
-  MedicoHorarioSearchRequestDto searchRequest = MedicoHorarioSearchRequestDto.builder()
-    .nombre(nombre)
-    .dni(dni)
-    .cmp(cmp)
-    .especialidad(especialidad)
-    .page(page)
-    .size(size)
-    .build();
+      @Parameter(description = "Tamaño de página") @RequestParam(defaultValue = "10") Integer size) {
 
-  MedicoHorarioPaginatedResponseDto response = medicoHorarioService.buscarMedicosConHorarios(searchRequest);
+    log.info(
+        "GET /api/admin/medico-horarios/con-horarios - Filtros: nombre={}, dni={}, cmp={}, especialidad={}, page={}, size={}",
+        nombre, dni, cmp, especialidad, page, size);
 
-  return ResponseEntity.ok(new ApiResponse<>(true, "Se encontro exitosamente los medicos y sus horarios.", response));
- }
+    MedicoHorarioSearchRequestDto searchRequest = MedicoHorarioSearchRequestDto.builder()
+        .nombre(nombre)
+        .dni(dni)
+        .cmp(cmp)
+        .especialidad(especialidad)
+        .page(page)
+        .size(size)
+        .build();
 
- @GetMapping("/sin-horarios")
- public ResponseEntity<ApiResponse<MedicoHorarioPaginatedResponseDto>> buscarMedicosSinHorarios(
-   @Parameter(description = "Nombre o apellido del médico") @RequestParam(required = false) String nombre,
+    MedicoHorarioPaginatedResponseDto response = medicoHorarioService.buscarMedicosConHorarios(searchRequest);
 
-   @Parameter(description = "Número de documento (DNI)") @RequestParam(required = false) String dni,
+    return ResponseEntity.ok(new ApiResponse<>(true, "Se encontro exitosamente los medicos y sus horarios.", response));
+  }
 
-   @Parameter(description = "Código de Colegio Médico del Perú") @RequestParam(required = false) String cmp,
+  @GetMapping("/sin-horarios")
+  public ResponseEntity<ApiResponse<MedicoHorarioPaginatedResponseDto>> buscarMedicosSinHorarios(
+      @Parameter(description = "Nombre o apellido del médico") @RequestParam(required = false) String nombre,
 
-   @Parameter(description = "Nombre de la especialidad") @RequestParam(required = false) String especialidad,
+      @Parameter(description = "Número de documento (DNI)") @RequestParam(required = false) String dni,
 
-   @Parameter(description = "Número de página (inicia en 0)") @RequestParam(defaultValue = "0") Integer page,
+      @Parameter(description = "Código de Colegio Médico del Perú") @RequestParam(required = false) String cmp,
 
-   @Parameter(description = "Tamaño de página") @RequestParam(defaultValue = "10") Integer size) {
+      @Parameter(description = "Nombre de la especialidad") @RequestParam(required = false) String especialidad,
 
-  log.info(
-    "GET /api/admin/medico-horarios/sin-horarios - Filtros: nombre={}, dni={}, cmp={}, especialidad={}, page={}, size={}",
-    nombre, dni, cmp, especialidad, page, size);
+      @Parameter(description = "Número de página (inicia en 0)") @RequestParam(defaultValue = "0") Integer page,
 
-  MedicoHorarioSearchRequestDto searchRequest = MedicoHorarioSearchRequestDto.builder()
-    .nombre(nombre)
-    .dni(dni)
-    .cmp(cmp)
-    .especialidad(especialidad)
-    .page(page)
-    .size(size)
-    .build();
+      @Parameter(description = "Tamaño de página") @RequestParam(defaultValue = "10") Integer size) {
 
-  MedicoHorarioPaginatedResponseDto response = medicoHorarioService.buscarMedicosSinHorarios(searchRequest);
+    log.info(
+        "GET /api/admin/medico-horarios/sin-horarios - Filtros: nombre={}, dni={}, cmp={}, especialidad={}, page={}, size={}",
+        nombre, dni, cmp, especialidad, page, size);
 
-  return ResponseEntity.ok(new ApiResponse<>(true, "Se encontro exitosamente los medicos sin horarios.", response));
- }
+    MedicoHorarioSearchRequestDto searchRequest = MedicoHorarioSearchRequestDto.builder()
+        .nombre(nombre)
+        .dni(dni)
+        .cmp(cmp)
+        .especialidad(especialidad)
+        .page(page)
+        .size(size)
+        .build();
 
- @GetMapping("/medico/{idMedico}")
- public ResponseEntity<ApiResponse<List<HorarioResponseDto>>> obtenerHorariosPorMedico(
-   @Parameter(description = "ID del médico") @PathVariable Integer idMedico) {
+    MedicoHorarioPaginatedResponseDto response = medicoHorarioService.buscarMedicosSinHorarios(searchRequest);
 
-  log.info("GET /api/admin/medico-horarios/medico/{} - Obteniendo horarios", idMedico);
+    return ResponseEntity.ok(new ApiResponse<>(true, "Se encontro exitosamente los medicos sin horarios.", response));
+  }
 
-  List<HorarioResponseDto> horarios = medicoHorarioService.obtenerHorariosPorMedico(idMedico);
+  @GetMapping("/medico/{idMedico}")
+  public ResponseEntity<ApiResponse<List<HorarioResponseDto>>> obtenerHorariosPorMedico(
+      @Parameter(description = "ID del médico") @PathVariable Integer idMedico) {
 
-  return ResponseEntity.ok(new ApiResponse<>(true, "Se obtuvo horarios por medico", horarios));
- }
+    log.info("GET /api/admin/medico-horarios/medico/{} - Obteniendo horarios", idMedico);
 
- @DeleteMapping("/medico/{idMedico}/horario/{idHorario}")
- public ResponseEntity<ApiResponse<Void>> eliminarHorarioMedico(
-   @Parameter(description = "ID del médico") @PathVariable Integer idMedico,
+    List<HorarioResponseDto> horarios = medicoHorarioService.obtenerHorariosPorMedico(idMedico);
 
-   @Parameter(description = "ID del horario") @PathVariable Integer idHorario) {
+    return ResponseEntity.ok(new ApiResponse<>(true, "Se obtuvo horarios por medico", horarios));
+  }
 
-  log.info("DELETE /api/admin/medico-horarios/medico/{}/horario/{} - Eliminando horario",
-    idMedico, idHorario);
+  @DeleteMapping("/medico/{idMedico}/horario/{idHorario}")
+  public ResponseEntity<ApiResponse<Void>> eliminarHorarioMedico(
+      @Parameter(description = "ID del médico") @PathVariable Integer idMedico,
 
-  medicoHorarioService.eliminarHorarioMedico(idMedico, idHorario);
+      @Parameter(description = "ID del horario") @PathVariable Integer idHorario) {
 
-  return ResponseEntity.ok(new ApiResponse<>(true, "Se elimino los horarios del medico", null));
- }
+    log.info("DELETE /api/admin/medico-horarios/medico/{}/horario/{} - Eliminando horario",
+        idMedico, idHorario);
+
+    medicoHorarioService.eliminarHorarioMedico(idMedico, idHorario);
+
+    return ResponseEntity.ok(new ApiResponse<>(true, "Se elimino los horarios del medico", null));
+  }
 }
