@@ -10,10 +10,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
 import ReZherk.clinica.sistema.core.application.dto.ApiResponse;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.AsignarHorariosRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.MedicoHorarioSearchRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.HorarioResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoConHorariosResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoHorarioAsignacionResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoHorarioPaginatedResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.service.MedicoHorarioService;
@@ -53,7 +59,7 @@ public class MedicoHorarioController {
   }
 
   @GetMapping("/con-horarios")
-  public ResponseEntity<ApiResponse<MedicoHorarioPaginatedResponseDto>> buscarMedicosConHorarios(
+  public ResponseEntity<ApiResponse<Page<MedicoConHorariosResponseDto>>> buscarMedicosConHorarios(
       @Parameter(description = "Nombre o apellido del médico") @RequestParam(required = false) String nombre,
 
       @Parameter(description = "Número de documento (DNI)") @RequestParam(required = false) String dni,
@@ -64,22 +70,20 @@ public class MedicoHorarioController {
 
       @Parameter(description = "Número de página (inicia en 0)") @RequestParam(defaultValue = "0") Integer page,
 
-      @Parameter(description = "Tamaño de página") @RequestParam(defaultValue = "10") Integer size) {
+      @Parameter(description = "Tamaño de página") @RequestParam(defaultValue = "10") Integer size,
+      @Parameter(description = "Ordenar por") @RequestParam(defaultValue = "id") String sortBy,
+      @Parameter(description = "ASC or DESC") @RequestParam(defaultValue = "ASC") String sortDirection) {
 
     log.info(
-        "GET /api/admin/medico-horarios/con-horarios - Filtros: nombre={}, dni={}, cmp={}, especialidad={}, page={}, size={}",
-        nombre, dni, cmp, especialidad, page, size);
+        "GET /api/admin/medico-horarios/con-horarios - Filtros: nombre={}, dni={}, cmp={}, especialidad={}, page={}, size={}, sortBy={},sortDirection={}",
+        nombre, dni, cmp, especialidad, page, size, sortBy, sortDirection);
 
-    MedicoHorarioSearchRequestDto searchRequest = MedicoHorarioSearchRequestDto.builder()
-        .nombre(nombre)
-        .dni(dni)
-        .cmp(cmp)
-        .especialidad(especialidad)
-        .page(page)
-        .size(size)
-        .build();
+    Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
 
-    MedicoHorarioPaginatedResponseDto response = medicoHorarioService.buscarMedicosConHorarios(searchRequest);
+    Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+    Page<MedicoConHorariosResponseDto> response = medicoHorarioService.buscarMedicosConHorarios(nombre, dni, cmp,
+        especialidad, pageable);
 
     return ResponseEntity.ok(new ApiResponse<>(true, "Se encontro exitosamente los medicos y sus horarios.", response));
   }

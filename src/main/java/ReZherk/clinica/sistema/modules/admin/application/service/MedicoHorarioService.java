@@ -2,6 +2,10 @@ package ReZherk.clinica.sistema.modules.admin.application.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -130,38 +134,46 @@ public class MedicoHorarioService {
   }
 
   @Transactional(readOnly = true)
-  public MedicoHorarioPaginatedResponseDto buscarMedicosConHorarios(MedicoHorarioSearchRequestDto request) {
-    log.info("Buscando médicos CON horarios - Página: {}, Tamaño: {}", request.getPage(), request.getSize());
+  public Page<MedicoConHorariosResponseDto> buscarMedicosConHorarios(String nombre, String dni, String cmp,
+      String especialidad, Pageable pageable) {
+    log.info("Buscando médicos CON horarios - Página: {}, Tamaño: {}", pageable.getPageNumber(),
+        pageable.getPageSize());
 
     // Llamar al procedimiento almacenado para obtener los datos
     List<Map<String, Object>> resultados = medicoHorarioRepository.buscarMedicosConHorarios(
-        request.getNombre(),
-        request.getDni(),
-        request.getCmp(),
-        request.getEspecialidad(),
-        request.getPage(),
-        request.getSize());
+        nombre,
+        dni,
+        cmp,
+        especialidad,
+        pageable.getPageNumber(),
+        pageable.getPageSize());
 
-    // Obtener el total de registros (segunda consulta del SP)
-    Long total = obtenerTotalMedicosConHorarios(request);
+    if (resultados.isEmpty()) {
+      log.info("No se encontraron médicos con horarios");
+      return Page.empty(pageable);
+    }
+
+    // Vamos a ver que nos llga
+    log.info("Total de resultados del SP: {}", resultados.size());
+    if (!resultados.isEmpty()) {
+      log.info("Primer registro completo:");
+      Map<String, Object> primerRegistro = resultados.get(0);
+      primerRegistro.forEach((key, value) -> {
+        log.info("  {} = {} (tipo: {})", key, value, (value != null ? value.getClass().getSimpleName() : "null"));
+      });
+    }
+
+    int start = (int) pageable.getOffset();
+    int end = Math.min((start + pageable.getPageSize()), resultados.size());
+
+    List<Map<String, Object>> usuariosPaginados = resultados.subList(start, end);
 
     // Mapear resultados
-    List<MedicoConHorariosResponseDto> medicos = resultados.stream()
+    List<MedicoConHorariosResponseDto> medicos = usuariosPaginados.stream()
         .map(medicoHorarioMapper::mapFromStoredProcedure)
         .collect(Collectors.toList());
 
-    // Calcular páginas
-    int totalPages = (int) Math.ceil((double) total / request.getSize());
-
-    return MedicoHorarioPaginatedResponseDto.builder()
-        .content(medicos)
-        .currentPage(request.getPage())
-        .pageSize(request.getSize())
-        .totalElements(total)
-        .totalPages(totalPages)
-        .hasNext(request.getPage() < totalPages - 1)
-        .hasPrevious(request.getPage() > 0)
-        .build();
+    return new PageImpl<>(medicos, pageable, resultados.size());
   }
 
   @Transactional(readOnly = true)
@@ -227,22 +239,6 @@ public class MedicoHorarioService {
     medicoHorarioRepository.deactivateById(medicoHorario.getIdMedicoHorario());
 
     log.info("Horario desactivado exitosamente");
-  }
-
-  // Métodos auxiliares para obtener totales
-  private Long obtenerTotalMedicosConHorarios(MedicoHorarioSearchRequestDto request) {
-    // El SP retorna dos result sets, necesitamos ejecutar una consulta separada
-    // para el total
-    List<Map<String, Object>> resultados = medicoHorarioRepository.buscarMedicosConHorarios(
-        request.getNombre(),
-        request.getDni(),
-        request.getCmp(),
-        request.getEspecialidad(),
-        0,
-        Integer.MAX_VALUE);
-
-    // Como el SP agrupa por médico, el tamaño de la lista es el total
-    return (long) resultados.size();
   }
 
   private Long obtenerTotalMedicosSinHorarios(MedicoHorarioSearchRequestDto request) {
