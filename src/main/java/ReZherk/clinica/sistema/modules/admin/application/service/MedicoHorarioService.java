@@ -12,7 +12,6 @@ import ReZherk.clinica.sistema.core.domain.entity.Usuario;
 import ReZherk.clinica.sistema.core.domain.repository.HorarioRepository;
 import ReZherk.clinica.sistema.core.domain.repository.MedicoHorarioRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
-import ReZherk.clinica.sistema.core.shared.enums.DiaSemana;
 import ReZherk.clinica.sistema.core.shared.enums.EstadoMedicoHorario;
 import ReZherk.clinica.sistema.core.shared.exception.BusinessException;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
@@ -27,9 +26,10 @@ import ReZherk.clinica.sistema.modules.admin.application.mapper.HorarioMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.MedicoHorarioMapper;
 import ReZherk.clinica.sistema.modules.admin.application.validator.HorarioValidator;
 import ReZherk.clinica.sistema.modules.admin.application.validator.MedicoValidator;
+import jakarta.validation.ValidationException;
 
 import java.time.Duration;
-import java.util.ArrayList;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,8 +73,6 @@ public class MedicoHorarioService {
   public MedicoHorarioAsignacionResponseDto asignarHorarios(AsignarHorariosRequestDto request) {
     log.info("Asignando horarios al médico ID: {}", request.getIdMedico());
 
-    horarioValidator.validarHorarios(request.getHorarios());
-
     Usuario medico = usuarioRepository.findById(request.getIdMedico())
         .orElseThrow(() -> new ResourceNotFoundException("Médico no encontrado con ID: " + request.getIdMedico()));
 
@@ -84,41 +82,48 @@ public class MedicoHorarioService {
       throw new BusinessException("El médico está inactivo");
     }
 
+    List<Horario> horarios = horarioRepository.findAllById(request.getHorarios());
+
+    if (horarios.size() != request.getHorarios().size()) {
+      throw new ValidationException("Algunos IDs de horarios no existen");
+    }
+
+    List<HorarioRequestDto> horariosParaValidar = horarios.stream()
+        .map(h -> HorarioRequestDto.builder()
+            .diaSemana(h.getDiaSemana().name())
+            .horaInicio(h.getHoraInicio().format(DateTimeFormatter.ofPattern("HH:mm")))
+            .horaFin(h.getHoraFin().format(DateTimeFormatter.ofPattern("HH:mm")))
+            .build())
+        .collect(Collectors.toList());
+
+    // Validar solapamientos y que las horas concuerden con sus horas semanales
+    horarioValidator.validarSolapamientos(horariosParaValidar);
+    horarioValidator.validarHorasSemanales(horarios, request.getHorasSemanales());
+
     // Desactivar horarios anteriores
     medicoHorarioRepository.deactivateAllByMedicoId(request.getIdMedico());
 
-    List<HorarioResponseDto> horariosAsignados = new ArrayList<>();
-    int contadorAsignados = 0;
+    List<MedicoHorario> medicosHorarios = horarios.stream()
+        .map(horario -> MedicoHorario.builder()
+            .medico(medico)
+            .horario(horario)
+            .estado(EstadoMedicoHorario.ACTIVO)
+            .build())
+        .collect(Collectors.toList());
 
-    for (HorarioRequestDto horarioDto : request.getHorarios()) {
-      // Buscar o crear el horario(Debo revisar ya que crea un nuevo horario)
-      Horario horario = horarioRepository.findByDiaSemanaAndHoraInicioAndHoraFin(
-          DiaSemana.valueOf(horarioDto.getDiaSemana().toUpperCase()),
-          java.time.LocalTime.parse(horarioDto.getHoraInicio()),
-          java.time.LocalTime.parse(horarioDto.getHoraFin())).orElseGet(() -> {
-            Horario nuevoHorario = horarioMapper.toEntity(horarioDto);
-            return horarioRepository.save(nuevoHorario);
-          });
+    medicoHorarioRepository.saveAll(medicosHorarios);
 
-      // Crear la relación médico-horario
-      MedicoHorario medicoHorario = MedicoHorario.builder()
-          .medico(medico)
-          .horario(horario)
-          .estado(EstadoMedicoHorario.ACTIVO)
-          .build();
+    List<HorarioResponseDto> horariosAsignados = horarios.stream()
+        .map(horarioMapper::toResponseDto)
+        .collect(Collectors.toList());
 
-      medicoHorarioRepository.save(medicoHorario);
-      horariosAsignados.add(horarioMapper.toResponseDto(horario));
-      contadorAsignados++;
-    }
-
-    log.info("Se asignaron {} horarios al médico {}", contadorAsignados, medico.getNombres());
+    log.info("Se asignaron {} horarios al médico {}", horarios.size(), medico.getNombres());
 
     return MedicoHorarioAsignacionResponseDto.builder()
         .idMedico(medico.getId())
         .nombreCompleto(medico.getNombres() + " " + medico.getApellidos())
         .especialidad(medicoDetalle.getEspecialidad().getNombreEspecialidad())
-        .horariosAsignados(contadorAsignados)
+        .horariosAsignados(horarios.size())
         .horarios(horariosAsignados)
         .mensaje("Horarios asignados exitosamente")
         .build();
