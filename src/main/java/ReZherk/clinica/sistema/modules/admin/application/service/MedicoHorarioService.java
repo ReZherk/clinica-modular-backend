@@ -21,11 +21,9 @@ import ReZherk.clinica.sistema.core.shared.exception.BusinessException;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.AsignarHorariosRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.request.HorarioRequestDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.request.MedicoHorarioSearchRequestDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.HorarioResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoConHorariosResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoHorarioAsignacionResponseDto;
-import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoHorarioPaginatedResponseDto;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.HorarioMapper;
 import ReZherk.clinica.sistema.modules.admin.application.mapper.MedicoHorarioMapper;
 import ReZherk.clinica.sistema.modules.admin.application.validator.HorarioValidator;
@@ -177,38 +175,36 @@ public class MedicoHorarioService {
   }
 
   @Transactional(readOnly = true)
-  public MedicoHorarioPaginatedResponseDto buscarMedicosSinHorarios(MedicoHorarioSearchRequestDto request) {
-    log.info("Buscando médicos SIN horarios - Página: {}, Tamaño: {}", request.getPage(), request.getSize());
+  public Page<MedicoConHorariosResponseDto> buscarMedicosSinHorarios(String nombre, String dni, String cmp,
+      String especialidad, Pageable pageable) {
+    log.info("Buscando médicos SIN horarios - Página: {}, Tamaño: {}", pageable.getPageNumber(),
+        pageable.getPageSize());
 
     // Llamar al procedimiento almacenado
     List<Map<String, Object>> resultados = medicoHorarioRepository.buscarMedicosSinHorarios(
-        request.getNombre(),
-        request.getDni(),
-        request.getCmp(),
-        request.getEspecialidad(),
-        request.getPage(),
-        request.getSize());
+        nombre,
+        dni,
+        cmp,
+        especialidad,
+        pageable.getPageNumber(),
+        pageable.getPageSize());
 
-    // Obtener el total de registros
-    Long total = obtenerTotalMedicosSinHorarios(request);
+    if (resultados.isEmpty()) {
+      log.info("No se encontraron médicos sin horarios");
+      return Page.empty(pageable);
+    }
+
+    int start = (int) pageable.getOffset();
+    int end = Math.min((start + pageable.getPageSize()), resultados.size());
+
+    List<Map<String, Object>> usuariosPaginados = resultados.subList(start, end);
 
     // Mapear resultados
-    List<MedicoConHorariosResponseDto> medicos = resultados.stream()
+    List<MedicoConHorariosResponseDto> medicos = usuariosPaginados.stream()
         .map(medicoHorarioMapper::mapFromStoredProcedure)
         .collect(Collectors.toList());
 
-    // Calcular páginas
-    int totalPages = (int) Math.ceil((double) total / request.getSize());
-
-    return MedicoHorarioPaginatedResponseDto.builder()
-        .content(medicos)
-        .currentPage(request.getPage())
-        .pageSize(request.getSize())
-        .totalElements(total)
-        .totalPages(totalPages)
-        .hasNext(request.getPage() < totalPages - 1)
-        .hasPrevious(request.getPage() > 0)
-        .build();
+    return new PageImpl<>(medicos, pageable, resultados.size());
   }
 
   @Transactional(readOnly = true)
@@ -241,15 +237,4 @@ public class MedicoHorarioService {
     log.info("Horario desactivado exitosamente");
   }
 
-  private Long obtenerTotalMedicosSinHorarios(MedicoHorarioSearchRequestDto request) {
-    List<Map<String, Object>> resultados = medicoHorarioRepository.buscarMedicosSinHorarios(
-        request.getNombre(),
-        request.getDni(),
-        request.getCmp(),
-        request.getEspecialidad(),
-        0,
-        Integer.MAX_VALUE);
-
-    return (long) resultados.size();
-  }
 }
