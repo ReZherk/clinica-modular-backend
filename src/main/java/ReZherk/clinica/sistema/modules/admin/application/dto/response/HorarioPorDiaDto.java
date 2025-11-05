@@ -21,6 +21,7 @@ public class HorarioPorDiaDto {
  @NoArgsConstructor
  @AllArgsConstructor
  public static class BloqueHorarioDto {
+  private Integer id;
   private String horaInicio;
   private String horaFin;
  }

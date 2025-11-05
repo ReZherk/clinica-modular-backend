@@ -57,7 +57,7 @@ public class MedicoHorarioMapper {
       return Collections.emptyList();
     }
 
-    // Formato: "Lunes:08:00-12:00|Martes:08:00-12:00"
+    // Formato: "10:Lunes:08:00-12:00|11:Martes:08:00-12:00"
     Map<String, List<HorarioPorDiaDto.BloqueHorarioDto>> horariosPorDiaMap = new LinkedHashMap<>();
 
     String[] bloques = horariosStr.split("\\|");
@@ -66,14 +66,22 @@ public class MedicoHorarioMapper {
     for (String bloque : bloques) {
       log.info("Procesando bloque: [{}]", bloque);
 
-      // Dividir SOLO en la primera ocurrencia de ":"
-      String[] partes = bloque.split(":", 2);
+      // Dividir en: id_horario, día, horario (HH:MM-HH:MM)
+      String[] partes = bloque.split(":", 3);
 
-      if (partes.length == 2) {
-        String dia = partes[0].trim();
-        String rangoHorario = partes[1]; // "08:00-12:00"
+      if (partes.length == 3) {
+        Integer idHorario = null;
+        try {
+          idHorario = Integer.parseInt(partes[0].trim());
+        } catch (NumberFormatException e) {
+          log.warn("  ID de horario inválido: {}", partes[0]);
+          continue;
+        }
 
-        log.info("  Día: [{}], Rango: [{}]", dia, rangoHorario);
+        String dia = partes[1].trim();
+        String rangoHorario = partes[2]; // "08:00-12:00"
+
+        log.info("  ID_Horario: [{}], Día: [{}], Rango: [{}]", idHorario, dia, rangoHorario);
 
         // Ahora dividir el rango por "-"
         String[] horas = rangoHorario.split("-");
@@ -85,6 +93,7 @@ public class MedicoHorarioMapper {
           log.info("    Hora inicio: [{}], Hora fin: [{}]", horaInicio, horaFin);
 
           HorarioPorDiaDto.BloqueHorarioDto bloqueDto = HorarioPorDiaDto.BloqueHorarioDto.builder()
+              .id(idHorario)
               .horaInicio(horaInicio)
               .horaFin(horaFin)
               .build();
@@ -94,7 +103,7 @@ public class MedicoHorarioMapper {
           log.warn("  Formato de horas inválido: {}", rangoHorario);
         }
       } else {
-        log.warn("  Formato de bloque inválido: {}", bloque);
+        log.warn("  Formato de bloque inválido (esperaba 3 partes): {}", bloque);
       }
     }
 
