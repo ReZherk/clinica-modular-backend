@@ -239,30 +239,37 @@ public class MedicoHorarioService {
   @Transactional(readOnly = true)
   public Page<MedicoConHorariosResponseDto> buscarMedicosSinHorarios(String nombre, String dni, String cmp,
       String especialidad, Pageable pageable) {
-    log.info("Buscando médicos SIN horarios - Página: {}, Tamaño: {}", pageable.getPageNumber(),
-        pageable.getPageSize());
+    log.info("Buscando médicos SIN horarios - Página: {}, Tamaño: {}, Sort: {}",
+        pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
 
-    // Llamar al procedimiento almacenado
+    // Extraer información de ordenamiento
+    String sortBy = "apellidos"; // default
+    String sortDirection = "ASC"; // default
+
+    if (pageable.getSort().isSorted()) {
+      Sort.Order order = pageable.getSort().iterator().next();
+      sortBy = order.getProperty();
+      sortDirection = order.getDirection().name();
+    }
+
+    // Llamar al procedimiento almacenado con los parámetros de ordenamiento
     List<Map<String, Object>> resultados = medicoHorarioRepository.buscarMedicosSinHorarios(
         nombre,
         dni,
         cmp,
         especialidad,
         pageable.getPageNumber(),
-        pageable.getPageSize());
+        pageable.getPageSize(),
+        sortBy,
+        sortDirection);
 
     if (resultados.isEmpty()) {
       log.info("No se encontraron médicos sin horarios");
       return Page.empty(pageable);
     }
 
-    int start = (int) pageable.getOffset();
-    int end = Math.min((start + pageable.getPageSize()), resultados.size());
-
-    List<Map<String, Object>> usuariosPaginados = resultados.subList(start, end);
-
     // Mapear resultados
-    List<MedicoConHorariosResponseDto> medicos = usuariosPaginados.stream()
+    List<MedicoConHorariosResponseDto> medicos = resultados.stream()
         .map(medicoHorarioMapper::mapFromStoredProcedure)
         .collect(Collectors.toList());
 
