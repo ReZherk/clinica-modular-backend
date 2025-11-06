@@ -56,6 +56,21 @@ public class MedicoHorarioController {
         .body(new ApiResponse<>(true, "Se asigno exitosamente los horarios.", response));
   }
 
+  @PostMapping("/modificar")
+  @Operation(summary = "modificar horarios a un médico", description = "modificar bloques horarios a un médico específico.")
+  public ResponseEntity<ApiResponse<MedicoHorarioAsignacionResponseDto>> modificarHorarios(
+      @Valid @RequestBody AsignarHorariosRequestDto request) {
+
+    log.info("POST /api/admin/medico-horarios/modificar - Modifica horarios al médico ID: {}",
+        request.getIdMedico());
+
+    MedicoHorarioAsignacionResponseDto response = medicoHorarioService.modificarHorarios(request);
+
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(new ApiResponse<>(true, "Se asigno exitosamente los horarios.", response));
+  }
+
   @GetMapping("/con-horarios")
   public ResponseEntity<ApiResponse<Page<MedicoConHorariosResponseDto>>> buscarMedicosConHorarios(
       @Parameter(description = "Nombre o apellido del médico") @RequestParam(required = false) String nombre,

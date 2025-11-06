@@ -102,9 +102,6 @@ public class MedicoHorarioService {
     horarioValidator.validarSolapamientos(horariosParaValidar);
     horarioValidator.validarHorasSemanales(horarios, request.getHorasSemanales());
 
-    // Desactivar horarios anteriores
-    medicoHorarioRepository.deactivateAllByMedicoId(request.getIdMedico());
-
     List<MedicoHorario> medicosHorarios = horarios.stream()
         .map(horario -> MedicoHorario.builder()
             .medico(medico)
@@ -128,6 +125,73 @@ public class MedicoHorarioService {
         .horariosAsignados(horarios.size())
         .horarios(horariosAsignados)
         .mensaje("Horarios asignados exitosamente")
+        .build();
+  }
+
+  @Transactional
+  public MedicoHorarioAsignacionResponseDto modificarHorarios(AsignarHorariosRequestDto request) {
+    log.info("Modificando horarios del médico ID: {}", request.getIdMedico());
+
+    Usuario medico = usuarioRepository.findById(request.getIdMedico())
+        .orElseThrow(() -> new ResourceNotFoundException("Médico no encontrado con ID: " + request.getIdMedico()));
+
+    MedicoDetalle medicoDetalle = validator.validateDetalleDelMedico(request.getIdMedico());
+
+    if (!medicoDetalle.getUsuario().getEstadoRegistro()) {
+      throw new BusinessException("El médico está inactivo");
+    }
+
+    // Validar que el médico tenga horarios asignados previamente
+    List<MedicoHorario> horariosActuales = medicoHorarioRepository.findByMedicoIdAndEstadoActivo(request.getIdMedico());
+    if (horariosActuales.isEmpty()) {
+      throw new BusinessException("El médico no tiene horarios asignados. Use el endpoint de asignación");
+    }
+
+    List<Horario> horarios = horarioRepository.findAllById(request.getHorarios());
+
+    if (horarios.size() != request.getHorarios().size()) {
+      throw new ValidationException("Algunos IDs de horarios no existen");
+    }
+
+    List<HorarioRequestDto> horariosParaValidar = horarios.stream()
+        .map(h -> HorarioRequestDto.builder()
+            .diaSemana(h.getDiaSemana().name())
+            .horaInicio(h.getHoraInicio().format(DateTimeFormatter.ofPattern("HH:mm")))
+            .horaFin(h.getHoraFin().format(DateTimeFormatter.ofPattern("HH:mm")))
+            .build())
+        .collect(Collectors.toList());
+
+    // Validar solapamientos y que las horas concuerden con sus horas semanales
+    horarioValidator.validarSolapamientos(horariosParaValidar);
+    horarioValidator.validarHorasSemanales(horarios, request.getHorasSemanales());
+
+    // ✅ CAMBIO: Eliminar físicamente los horarios anteriores en lugar de desactivar
+    medicoHorarioRepository.deleteAllByMedicoId(request.getIdMedico());
+    medicoHorarioRepository.flush(); // Asegurar que se ejecute el DELETE antes del INSERT
+
+    List<MedicoHorario> medicosHorarios = horarios.stream()
+        .map(horario -> MedicoHorario.builder()
+            .medico(medico)
+            .horario(horario)
+            .estado(EstadoMedicoHorario.ACTIVO)
+            .build())
+        .collect(Collectors.toList());
+
+    medicoHorarioRepository.saveAll(medicosHorarios);
+
+    List<HorarioResponseDto> horariosAsignados = horarios.stream()
+        .map(horarioMapper::toResponseDto)
+        .collect(Collectors.toList());
+
+    log.info("Se modificaron los horarios del médico {}. Total: {}", medico.getNombres(), horarios.size());
+
+    return MedicoHorarioAsignacionResponseDto.builder()
+        .idMedico(medico.getId())
+        .nombreCompleto(medico.getNombres() + " " + medico.getApellidos())
+        .especialidad(medicoDetalle.getEspecialidad().getNombreEspecialidad())
+        .horariosAsignados(horarios.size())
+        .horarios(horariosAsignados)
+        .mensaje("Horarios modificados exitosamente")
         .build();
   }
 
