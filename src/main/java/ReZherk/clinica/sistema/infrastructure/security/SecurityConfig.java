@@ -95,6 +95,9 @@ public class SecurityConfig {
             .requestMatchers("/api/admin/medicos/**")
             .hasAuthority("DOCTOR_MANAGE")
 
+            .requestMatchers("/api/admin/medico-horarios/**")
+            .hasAuthority("SCHEDULE_MANAGE")
+
             .requestMatchers(
                 "/api/admins/create-admin",
                 "/api/admins/activate",
