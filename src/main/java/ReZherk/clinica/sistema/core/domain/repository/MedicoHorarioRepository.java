@@ -48,14 +48,16 @@ public interface MedicoHorarioRepository extends JpaRepository<MedicoHorario, In
       @Param("idHorario") Integer idHorario);
 
   // Llamada al procedimiento almacenado para médicos CON horarios
-  @Query(value = "CALL sp_buscar_medicos_con_horarios(:nombre, :dni, :cmp, :especialidad, :page, :size)", nativeQuery = true)
+  @Query(value = "CALL sp_buscar_medicos_con_horarios(:nombre, :dni, :cmp, :especialidad, :page, :size, :sortBy, :sortDirection)", nativeQuery = true)
   List<Map<String, Object>> buscarMedicosConHorarios(
       @Param("nombre") String nombre,
       @Param("dni") String dni,
       @Param("cmp") String cmp,
       @Param("especialidad") String especialidad,
       @Param("page") Integer page,
-      @Param("size") Integer size);
+      @Param("size") Integer size,
+      @Param("sortBy") String sortBy,
+      @Param("sortDirection") String sortDirection);
 
   // Llamada al procedimiento almacenado para médicos SIN horarios
   @Query(value = "CALL sp_buscar_medicos_sin_horarios(:nombre, :dni, :cmp, :especialidad, :page, :size)", nativeQuery = true)

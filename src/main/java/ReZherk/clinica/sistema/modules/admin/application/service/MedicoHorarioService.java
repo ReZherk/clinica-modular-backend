@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -198,40 +199,37 @@ public class MedicoHorarioService {
   @Transactional(readOnly = true)
   public Page<MedicoConHorariosResponseDto> buscarMedicosConHorarios(String nombre, String dni, String cmp,
       String especialidad, Pageable pageable) {
-    log.info("Buscando médicos CON horarios - Página: {}, Tamaño: {}", pageable.getPageNumber(),
-        pageable.getPageSize());
+    log.info("Buscando médicos CON horarios - Página: {}, Tamaño: {}, Sort: {}",
+        pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
 
-    // Llamar al procedimiento almacenado para obtener los datos
+    // Extraer información de ordenamiento
+    String sortBy = "apellidos"; // default
+    String sortDirection = "ASC"; // default
+
+    if (pageable.getSort().isSorted()) {
+      Sort.Order order = pageable.getSort().iterator().next();
+      sortBy = order.getProperty();
+      sortDirection = order.getDirection().name();
+    }
+
+    // Llamar al procedimiento almacenado con los parámetros de ordenamiento
     List<Map<String, Object>> resultados = medicoHorarioRepository.buscarMedicosConHorarios(
         nombre,
         dni,
         cmp,
         especialidad,
         pageable.getPageNumber(),
-        pageable.getPageSize());
+        pageable.getPageSize(),
+        sortBy,
+        sortDirection);
 
     if (resultados.isEmpty()) {
       log.info("No se encontraron médicos con horarios");
       return Page.empty(pageable);
     }
 
-    // Vamos a ver que nos llga
-    log.info("Total de resultados del SP: {}", resultados.size());
-    if (!resultados.isEmpty()) {
-      log.info("Primer registro completo:");
-      Map<String, Object> primerRegistro = resultados.get(0);
-      primerRegistro.forEach((key, value) -> {
-        log.info("  {} = {} (tipo: {})", key, value, (value != null ? value.getClass().getSimpleName() : "null"));
-      });
-    }
-
-    int start = (int) pageable.getOffset();
-    int end = Math.min((start + pageable.getPageSize()), resultados.size());
-
-    List<Map<String, Object>> usuariosPaginados = resultados.subList(start, end);
-
     // Mapear resultados
-    List<MedicoConHorariosResponseDto> medicos = usuariosPaginados.stream()
+    List<MedicoConHorariosResponseDto> medicos = resultados.stream()
         .map(medicoHorarioMapper::mapFromStoredProcedure)
         .collect(Collectors.toList());
 
