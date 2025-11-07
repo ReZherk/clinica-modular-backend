@@ -50,6 +50,14 @@ public class Usuario {
  @Column(name = "Fecha_Creacion", updatable = false, insertable = false)
  private LocalDateTime fechaCreacion;
 
+ // Si ocurre algun error en el modulo de admin esto revisare.
+
+ @OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY)
+ private MedicoDetalle medicoDetalle;
+
+ @OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY)
+ private PacienteDetalle pacienteDetalle;
+
  // Relación con perfiles
  @ManyToMany(fetch = FetchType.LAZY)
  @JoinTable(name = "usuario_perfil", joinColumns = @JoinColumn(name = "Id_Usuario"), inverseJoinColumns = @JoinColumn(name = "Id_Perfil"))
