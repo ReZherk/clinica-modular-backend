@@ -169,6 +169,6 @@ Si encuentras algún problema o tienes preguntas:
 
 1. Revisa la documentación en Swagger UI
 2. Verifica los logs de la aplicación
-3. Abre un issue en el repositorio
+3. Abre un issue en el repositorio.
 
 ---
