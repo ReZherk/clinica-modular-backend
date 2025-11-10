@@ -1,6 +1,6 @@
 package ReZherk.clinica.sistema.modules.appointment.application.dto.request;
 
-import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -21,6 +21,6 @@ public class HorariosDisponiblesRequestDto {
  private Integer idMedico;
 
  @NotNull(message = "La fecha es obligatoria")
- @Future(message = "La fecha debe ser futura")
+ @FutureOrPresent(message = "La fecha debe ser hoy o futura")
  private LocalDate fecha;
 }
