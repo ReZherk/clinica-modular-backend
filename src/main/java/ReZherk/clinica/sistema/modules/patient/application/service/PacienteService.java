@@ -8,12 +8,20 @@ import ReZherk.clinica.sistema.core.domain.repository.RolPerfilRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.exception.BusinessException;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
+import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCancelRequestDto;
+import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCreateRequestDto;
+import ReZherk.clinica.sistema.modules.appointment.application.dto.request.HorariosDisponiblesRequestDto;
+import ReZherk.clinica.sistema.modules.appointment.application.dto.response.CitaResponseDto;
+import ReZherk.clinica.sistema.modules.appointment.application.dto.response.HorariosDisponiblesResponseDto;
+import ReZherk.clinica.sistema.modules.appointment.application.service.CitaService;
 import ReZherk.clinica.sistema.modules.patient.application.dto.request.RegisterPacienteDto;
 import ReZherk.clinica.sistema.modules.patient.application.dto.response.RegisterResponseDto;
 import ReZherk.clinica.sistema.modules.patient.application.dto.response.PatientCreationResponseDto;
 import ReZherk.clinica.sistema.modules.patient.application.mapper.PacienteDetalleMapper;
 import ReZherk.clinica.sistema.modules.patient.application.mapper.PacienteMapper;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +38,7 @@ public class PacienteService {
   private final PacienteDetalleMapper pacienteDetalleMapper;
   private final PacienteMapper pacienteMapper;
   private final PasswordEncoder passwordEncoder;
+  private final CitaService citaService;
 
   @Transactional
   public RegisterResponseDto registerPaciente(RegisterPacienteDto registerDto) {
@@ -96,4 +105,30 @@ public class PacienteService {
     }
   }
 
+  // Apstir de aqui son servicios que vienen del modulo de citas.
+
+  @Transactional
+  public CitaResponseDto crearCita(CitaCreateRequestDto request) {
+    return citaService.crearCitaPaciente(request);
+  }
+
+  @Transactional
+  public CitaResponseDto cancelarCita(CitaCancelRequestDto request) {
+    return citaService.cancelarCitaPaciente(request);
+  }
+
+  @Transactional(readOnly = true)
+  public Page<CitaResponseDto> listarCitas(Integer idPaciente, Integer page, Integer size) {
+    return citaService.obtenerCitasPaciente(idPaciente, page, size);
+  }
+
+  @Transactional(readOnly = true)
+  public CitaResponseDto detalleCita(Integer idCita, Integer idPaciente) {
+    return citaService.obtenerDetalleCitaPaciente(idCita, idPaciente);
+  }
+
+  @Transactional(readOnly = true)
+  public HorariosDisponiblesResponseDto listarHorariosDisponibles(HorariosDisponiblesRequestDto request) {
+    return citaService.listarHorariosDisponibles(request);
+  }
 }
