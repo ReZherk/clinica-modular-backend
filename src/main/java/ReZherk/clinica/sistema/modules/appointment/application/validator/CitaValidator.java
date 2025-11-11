@@ -132,7 +132,6 @@ public class CitaValidator {
         throw new BusinessException("El nuevo médico debe pertenecer a la misma especialidad");
       }
 
-      // Validar día y hora
       validarDiaSemana(nuevaFecha, nuevoMedicoHorario.getHorario());
       validarHoraDentroRango(nuevaHora, nuevoMedicoHorario.getHorario());
 

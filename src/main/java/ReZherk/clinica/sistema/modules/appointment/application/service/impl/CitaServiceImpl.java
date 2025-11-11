@@ -3,6 +3,7 @@ package ReZherk.clinica.sistema.modules.appointment.application.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,11 +15,9 @@ import ReZherk.clinica.sistema.core.domain.entity.MedicoDetalle;
 import ReZherk.clinica.sistema.core.domain.entity.MedicoHorario;
 import ReZherk.clinica.sistema.core.domain.entity.Usuario;
 import ReZherk.clinica.sistema.core.domain.repository.CitaRepository;
-import ReZherk.clinica.sistema.core.domain.repository.EspecialidadRepository;
 import ReZherk.clinica.sistema.core.domain.repository.MedicoHorarioRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.enums.EstadoCita;
-import ReZherk.clinica.sistema.core.shared.enums.EstadoMedicoHorario;
 import ReZherk.clinica.sistema.core.shared.exception.BusinessException;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCancelRequestDto;
@@ -37,202 +36,328 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CitaServiceImpl implements CitaService {
 
- private final CitaRepository citaRepository;
- private final MedicoHorarioRepository medicoHorarioRepository;
- private final UsuarioRepository usuarioRepository;
- private final EspecialidadRepository especialidadRepository;
- private final CitaMapper citaMapper;
- private final CitaValidator citaValidator;
+  private final CitaRepository citaRepository;
+  private final MedicoHorarioRepository medicoHorarioRepository;
+  private final UsuarioRepository usuarioRepository;
+  private final CitaMapper citaMapper;
+  private final CitaValidator citaValidator;
 
- @Override
- @Transactional
- public CitaResponseDto crearCitaPaciente(CitaCreateRequestDto request) {
+  @Override
+  @Transactional
+  public CitaResponseDto crearCitaPaciente(CitaCreateRequestDto request) {
 
-  log.info("Creando cita para paciente ID: {}", request.getIdPaciente());
+    log.info("Creando cita para paciente ID: {}", request.getIdPaciente());
 
-  citaValidator.validateCrearCita(
-    request.getIdMedicoHorario(),
-    request.getIdPaciente(),
-    request.getFecha(),
-    request.getHora());
+    citaValidator.validateCrearCita(
+        request.getIdMedicoHorario(),
+        request.getIdPaciente(),
+        request.getFecha(),
+        request.getHora());
 
-  MedicoHorario medicoHorario = medicoHorarioRepository.findById(request.getIdMedicoHorario())
-    .orElseThrow(() -> new ResourceNotFoundException("Médico horario no encontrado"));
+    MedicoHorario medicoHorario = medicoHorarioRepository.findById(request.getIdMedicoHorario())
+        .orElseThrow(() -> new ResourceNotFoundException("Médico horario no encontrado"));
 
-  Usuario paciente = usuarioRepository.findById(request.getIdPaciente())
-    .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado"));
+    Usuario paciente = usuarioRepository.findById(request.getIdPaciente())
+        .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado"));
 
-  Cita cita = citaMapper.toEntity(request, medicoHorario, paciente);
-  cita = citaRepository.save(cita);
+    Cita cita = citaMapper.toEntity(request, medicoHorario, paciente);
+    cita = citaRepository.save(cita);
 
-  log.info("Cita creada exitosamente con ID: {}", cita.getIdCita());
+    log.info("Cita creada exitosamente con ID: {}", cita.getIdCita());
 
-  // Recargar para verificiar la ocrrecta creacion.
-  cita = citaRepository.findByIdWithDetails(cita.getIdCita())
-    .orElseThrow(() -> new ResourceNotFoundException("Error al recargar cita"));
+    // Recargar para verificiar la ocrrecta creacion.
+    cita = citaRepository.findByIdWithDetails(cita.getIdCita())
+        .orElseThrow(() -> new ResourceNotFoundException("Error al recargar cita"));
 
-  return citaMapper.toResponseDto(cita);
+    return citaMapper.toResponseDto(cita);
 
- }
-
- @Override
- @Transactional
- public CitaResponseDto cancelarCitaPaciente(CitaCancelRequestDto request) {
-  log.info("Cancelando cita ID: {} por paciente ID: {}", request.getIdCita(), request.getIdUsuario());
-
-  Cita cita = citaValidator.validateCancelarCita(request.getIdCita(), request.getIdUsuario());
-
-  cita.setEstado(EstadoCita.CANCELADA);
-  cita = citaRepository.save(cita);
-
-  log.info("Cita cancelada exitosamente");
-
-  return citaMapper.toResponseDto(cita);
- }
-
- @Override
- @Transactional(readOnly = true)
- public Page<CitaResponseDto> obtenerCitasPaciente(Integer idPaciente, Integer page, Integer size) {
-  log.info("Obteniendo citas del paciente ID: {}", idPaciente);
-
-  Pageable pageable = PageRequest.of(page, size);
-  Page<Cita> citas = citaRepository.findAllByPacienteId(idPaciente, pageable);
-
-  return citas.map(citaMapper::toResponseDto);
- }
-
- @Override
- @Transactional(readOnly = true)
- public CitaResponseDto obtenerDetalleCitaPaciente(Integer idCita, Integer idPaciente) {
-  log.info("Obteniendo detalle de cita ID: {} para paciente ID: {}", idCita, idPaciente);
-
-  Cita cita = citaRepository.findByIdWithDetails(idCita)
-    .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada"));
-
-  if (!cita.getPaciente().getId().equals(idPaciente)) {
-   throw new BusinessException("No tiene permisos para ver esta cita");
   }
 
-  return citaMapper.toResponseDto(cita);
- }
+  @Override
+  @Transactional
+  public CitaResponseDto cancelarCitaPaciente(CitaCancelRequestDto request) {
+    log.info("Cancelando cita ID: {} por paciente ID: {}", request.getIdCita(), request.getIdUsuario());
 
- @Override
- @Transactional(readOnly = true)
- public HorariosDisponiblesResponseDto listarHorariosDisponibles(HorariosDisponiblesRequestDto request) {
-  log.info("Listando horarios disponibles del médico ID: {} para fecha: {}",
-    request.getIdMedico(), request.getFecha());
+    Cita cita = citaValidator.validateCancelarCita(request.getIdCita(), request.getIdUsuario());
 
-  Usuario medico = usuarioRepository.findById(request.getIdMedico())
-    .orElseThrow(() -> new ResourceNotFoundException("Médico no encontrado"));
+    cita.setEstado(EstadoCita.CANCELADA);
+    cita = citaRepository.save(cita);
 
-  MedicoDetalle medicoDetalle = medico.getMedicoDetalle();
-  if (medicoDetalle == null) {
-   throw new BusinessException("El usuario no es un médico");
+    log.info("Cita cancelada exitosamente");
+
+    return citaMapper.toResponseDto(cita);
   }
 
-  List<MedicoHorario> medicoHorarios = medicoHorarioRepository.findByMedicoIdAndEstadoActivo(
-    request.getIdMedico());
+  @Override
+  @Transactional(readOnly = true)
+  public Page<CitaResponseDto> obtenerCitasPaciente(Integer idPaciente, Integer page, Integer size) {
+    log.info("Obteniendo citas del paciente ID: {}", idPaciente);
 
-  if (medicoHorarios.isEmpty()) {
-   throw new BusinessException("El médico no tiene horarios configurados");
+    Pageable pageable = PageRequest.of(page, size);
+    Page<Cita> citas = citaRepository.findAllByPacienteId(idPaciente, pageable);
+
+    return citas.map(citaMapper::toResponseDto);
   }
 
-  // Obtener citas ocupadas en esa fecha
-  List<Cita> citasOcupadas = citaRepository.findCitasOcupadasByMedicoAndFecha(
-    request.getIdMedico(), request.getFecha());
+  @Override
+  @Transactional(readOnly = true)
+  public CitaResponseDto obtenerDetalleCitaPaciente(Integer idCita, Integer idPaciente) {
+    log.info("Obteniendo detalle de cita ID: {} para paciente ID: {}", idCita, idPaciente);
 
-  List<HorariosDisponiblesResponseDto.HorarioDisponible> horariosDisponibles = new ArrayList<>();
+    Cita cita = citaRepository.findByIdWithDetails(idCita)
+        .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada"));
 
-  for (MedicoHorario mh : medicoHorarios) {
-   Horario horario = mh.getHorario();
-
-   // Verificar si el día de la semana coincide
-   if (!esDiaCorrecto(request.getFecha(), horario)) {
-    continue;
-   }
-
-   // Generar intervalos de tiempo según la duración de la especialidad
-   Byte duracion = medicoDetalle.getEspecialidad().getDuracion();
-   LocalTime horaActual = horario.getHoraInicio();
-
-   while (horaActual.isBefore(horario.getHoraFin())) {
-    final LocalTime horaFinal = horaActual;
-
-    // Verificar si la hora está ocupada
-    boolean estaOcupado = citasOcupadas.stream()
-      .anyMatch(cita -> cita.getHora().equals(horaFinal));
-
-    // Solo agregar si está LIBRE (para pacientes)
-    if (!estaOcupado) {
-     horariosDisponibles.add(HorariosDisponiblesResponseDto.HorarioDisponible.builder()
-       .idMedicoHorario(mh.getIdMedicoHorario())
-       .hora(horaActual)
-       .disponible(true)
-       .build());
+    if (!cita.getPaciente().getId().equals(idPaciente)) {
+      throw new BusinessException("No tiene permisos para ver esta cita");
     }
 
-    horaActual = horaActual.plusMinutes(duracion);
-   }
+    return citaMapper.toResponseDto(cita);
   }
 
-  return HorariosDisponiblesResponseDto.builder()
-    .idMedico(medico.getId())
-    .nombreMedico(medico.getNombres() + " " + medico.getApellidos())
-    .especialidad(medicoDetalle.getEspecialidad().getNombreEspecialidad())
-    .horariosDisponibles(horariosDisponibles)
-    .build();
- }
+  @Override
+  @Transactional(readOnly = true)
+  public HorariosDisponiblesResponseDto listarHorariosDisponibles(HorariosDisponiblesRequestDto request) {
+    log.info("Listando horarios disponibles del médico ID: {} para fecha: {}",
+        request.getIdMedico(), request.getFecha());
 
- @Override
- public CitaResponseDto crearCitaAdmin(CitaCreateRequestDto request) {
-  // TODO Auto-generated method stub
-  throw new UnsupportedOperationException("Unimplemented method 'crearCitaAdmin'");
- }
+    Usuario medico = usuarioRepository.findById(request.getIdMedico())
+        .orElseThrow(() -> new ResourceNotFoundException("Médico no encontrado"));
 
- @Override
- public CitaResponseDto cancelarCitaAdmin(Integer idCita) {
-  // TODO Auto-generated method stub
-  throw new UnsupportedOperationException("Unimplemented method 'cancelarCitaAdmin'");
- }
+    MedicoDetalle medicoDetalle = medico.getMedicoDetalle();
+    if (medicoDetalle == null) {
+      throw new BusinessException("El usuario no es un médico");
+    }
 
- @Override
- public CitaResponseDto completarCita(Integer idCita) {
-  // TODO Auto-generated method stub
-  throw new UnsupportedOperationException("Unimplemented method 'completarCita'");
- }
+    List<MedicoHorario> medicoHorarios = medicoHorarioRepository.findByMedicoIdAndEstadoActivo(
+        request.getIdMedico());
 
- @Override
- public CitaResponseDto reprogramarCita(CitaReprogramRequestDto request) {
-  // TODO Auto-generated method stub
-  throw new UnsupportedOperationException("Unimplemented method 'reprogramarCita'");
- }
+    if (medicoHorarios.isEmpty()) {
+      throw new BusinessException("El médico no tiene horarios configurados");
+    }
 
- @Override
- public Page<CitaListadoResult> listarCitasConFiltros(CitaFiltroRequestDto filtros) {
-  // TODO Auto-generated method stub
-  throw new UnsupportedOperationException("Unimplemented method 'listarCitasConFiltros'");
- }
+    // Obtener citas ocupadas en esa fecha
+    List<Cita> citasOcupadas = citaRepository.findCitasOcupadasByMedicoAndFecha(
+        request.getIdMedico(), request.getFecha());
 
- @Override
- public HorariosDisponiblesResponseDto listarHorariosMedicoCompleto(Integer idMedico, LocalDate fecha) {
-  // TODO Auto-generated method stub
-  throw new UnsupportedOperationException("Unimplemented method 'listarHorariosMedicoCompleto'");
- }
+    List<HorariosDisponiblesResponseDto.HorarioDisponible> horariosDisponibles = new ArrayList<>();
 
- private boolean esDiaCorrecto(LocalDate fecha, Horario horario) {
-  String diaSemana = fecha.getDayOfWeek()
-    .getDisplayName(java.time.format.TextStyle.FULL, new java.util.Locale("es", "ES"));
+    for (MedicoHorario mh : medicoHorarios) {
+      Horario horario = mh.getHorario();
 
-  diaSemana = diaSemana.substring(0, 1).toUpperCase() + diaSemana.substring(1).toLowerCase();
+      // Verificar si el día de la semana coincide
+      if (!esDiaCorrecto(request.getFecha(), horario)) {
+        continue;
+      }
 
-  return horario.getDiaSemana().name().equals(diaSemana);
- }
+      // Generar intervalos de tiempo según la duración de la especialidad
+      Byte duracion = medicoDetalle.getEspecialidad().getDuracion();
+      LocalTime horaActual = horario.getHoraInicio();
+
+      while (horaActual.isBefore(horario.getHoraFin())) {
+        final LocalTime horaFinal = horaActual;
+
+        // Verificar si la hora está ocupada
+        boolean estaOcupado = citasOcupadas.stream()
+            .anyMatch(cita -> cita.getHora().equals(horaFinal));
+
+        // Solo agregar si está LIBRE (para pacientes)
+        if (!estaOcupado) {
+          horariosDisponibles.add(HorariosDisponiblesResponseDto.HorarioDisponible.builder()
+              .idMedicoHorario(mh.getIdMedicoHorario())
+              .hora(horaActual)
+              .disponible(true)
+              .build());
+        }
+
+        horaActual = horaActual.plusMinutes(duracion);
+      }
+    }
+
+    return HorariosDisponiblesResponseDto.builder()
+        .idMedico(medico.getId())
+        .nombreMedico(medico.getNombres() + " " + medico.getApellidos())
+        .especialidad(medicoDetalle.getEspecialidad().getNombreEspecialidad())
+        .horariosDisponibles(horariosDisponibles)
+        .build();
+  }
+
+  @Override
+  @Transactional
+  public CitaResponseDto cancelarCitaAdmin(Integer idCita) {
+    log.info("Admin cancelando cita ID: {}", idCita);
+
+    Cita cita = citaRepository.findByIdWithDetails(idCita)
+        .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada"));
+
+    if (cita.getEstado() == EstadoCita.CANCELADA) {
+      throw new BusinessException("La cita ya está cancelada");
+    }
+
+    if (cita.getEstado() == EstadoCita.COMPLETADA) {
+      throw new BusinessException("No se puede cancelar una cita completada");
+    }
+
+    cita.setEstado(EstadoCita.CANCELADA);
+    cita = citaRepository.save(cita);
+
+    log.info("Cita cancelada exitosamente por admin");
+
+    return citaMapper.toResponseDto(cita);
+  }
+
+  @Override
+  @Transactional
+  public CitaResponseDto completarCita(Integer idCita) {
+    log.info("Completando cita ID: {}", idCita);
+
+    Cita cita = citaValidator.validateCompletarCita(idCita);
+
+    cita.setEstado(EstadoCita.COMPLETADA);
+    cita = citaRepository.save(cita);
+
+    log.info("Cita completada exitosamente");
+
+    return citaMapper.toResponseDto(cita);
+  }
+
+  @Override
+  public CitaResponseDto reprogramarCita(CitaReprogramRequestDto request) {
+    log.info("Reprogramando cita ID: {}", request.getIdCita());
+
+    Cita cita = citaRepository.findByIdWithDetails(request.getIdCita())
+        .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada"));
+
+    citaValidator.validateReprogramarCita(
+        cita,
+        request.getNuevaFecha(),
+        request.getNuevaHora(),
+        request.getNuevoIdMedicoHorario());
+
+    cita.setFecha(request.getNuevaFecha());
+    cita.setHora(request.getNuevaHora());
+
+    if (request.getNuevoIdMedicoHorario() != null &&
+        !request.getNuevoIdMedicoHorario().equals(cita.getMedicoHorario().getIdMedicoHorario())) {
+
+      MedicoHorario nuevoMedicoHorario = medicoHorarioRepository.findById(request.getNuevoIdMedicoHorario())
+          .orElseThrow(() -> new ResourceNotFoundException("Nuevo médico horario no encontrado"));
+
+      cita.setMedicoHorario(nuevoMedicoHorario);
+    }
+
+    cita = citaRepository.save(cita);
+
+    log.info("Cita reprogramada exitosamente");
+
+    // Recargar para verificar
+    cita = citaRepository.findByIdWithDetails(cita.getIdCita())
+        .orElseThrow(() -> new ResourceNotFoundException("Error al recargar cita"));
+
+    return citaMapper.toResponseDto(cita);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<CitaListadoResult> listarCitasConFiltros(CitaFiltroRequestDto filtros) {
+
+    List<CitaListadoResult> resultados = citaRepository.listarCitasConFiltros(
+        filtros.getIdMedico(),
+        filtros.getIdEspecialidad(),
+        filtros.getIdPaciente(),
+        filtros.getEstado(),
+        filtros.getFecha(),
+        filtros.getFechaInicio(),
+        filtros.getFechaFin(),
+        filtros.getPage(),
+        filtros.getSize());
+
+    long total = 0;
+    if (!resultados.isEmpty() && resultados.get(0).getTotalRegistros() != null) {
+      total = resultados.get(0).getTotalRegistros();
+    }
+
+    Pageable pageable = PageRequest.of(filtros.getPage(), filtros.getSize());
+
+    return new PageImpl<>(resultados, pageable, total);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public HorariosDisponiblesResponseDto listarHorariosMedicoCompleto(Integer idMedico, LocalDate fecha) {
+    log.info("Listando todos los horarios (libres y ocupados) del médico ID: {} para fecha: {}",
+        idMedico, fecha);
+
+    Usuario medico = usuarioRepository.findById(idMedico)
+        .orElseThrow(() -> new ResourceNotFoundException("Médico no encontrado"));
+
+    MedicoDetalle medicoDetalle = medico.getMedicoDetalle();
+    if (medicoDetalle == null) {
+      throw new BusinessException("El usuario no es un médico");
+    }
+
+    // Obtener horarios activos del médico
+    List<MedicoHorario> medicoHorarios = medicoHorarioRepository.findByMedicoIdAndEstadoActivo(
+        idMedico);
+
+    if (medicoHorarios.isEmpty()) {
+      throw new BusinessException("El médico no tiene horarios configurados");
+    }
+
+    // Obtener citas ocupadas en esa fecha
+    List<Cita> citasOcupadas = citaRepository.findCitasOcupadasByMedicoAndFecha(idMedico, fecha);
+
+    // Generar lista de horarios (libres y ocupados)
+    List<HorariosDisponiblesResponseDto.HorarioDisponible> todosLosHorarios = new ArrayList<>();
+
+    for (MedicoHorario mh : medicoHorarios) {
+      Horario horario = mh.getHorario();
+
+      if (!esDiaCorrecto(fecha, horario)) {
+        continue;
+      }
+
+      Byte duracion = medicoDetalle.getEspecialidad().getDuracion();
+      LocalTime horaActual = horario.getHoraInicio();
+
+      while (horaActual.isBefore(horario.getHoraFin())) {
+        final LocalTime horaFinal = horaActual;
+
+        // Verificar si la hora está ocupada
+        boolean estaOcupado = citasOcupadas.stream()
+            .anyMatch(cita -> cita.getHora().equals(horaFinal));
+
+        // Agregar TODOS los horarios (libres y ocupados)
+        todosLosHorarios.add(HorariosDisponiblesResponseDto.HorarioDisponible.builder()
+            .idMedicoHorario(mh.getIdMedicoHorario())
+            .hora(horaActual)
+            .disponible(!estaOcupado)
+            .build());
+
+        horaActual = horaActual.plusMinutes(duracion);
+      }
+    }
+
+    return HorariosDisponiblesResponseDto.builder()
+        .idMedico(medico.getId())
+        .nombreMedico(medico.getNombres() + " " + medico.getApellidos())
+        .especialidad(medicoDetalle.getEspecialidad().getNombreEspecialidad())
+        .horariosDisponibles(todosLosHorarios)
+        .build();
+  }
+
+  private boolean esDiaCorrecto(LocalDate fecha, Horario horario) {
+    String diaSemana = fecha.getDayOfWeek()
+        .getDisplayName(java.time.format.TextStyle.FULL, new java.util.Locale("es", "ES"));
+
+    diaSemana = diaSemana.substring(0, 1).toUpperCase() + diaSemana.substring(1).toLowerCase();
+
+    return horario.getDiaSemana().name().equals(diaSemana);
+  }
 
 }

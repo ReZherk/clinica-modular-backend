@@ -27,7 +27,6 @@ public interface CitaService {
  HorariosDisponiblesResponseDto listarHorariosDisponibles(HorariosDisponiblesRequestDto request);
 
  // Admin endpoints
- CitaResponseDto crearCitaAdmin(CitaCreateRequestDto request);
 
  CitaResponseDto cancelarCitaAdmin(Integer idCita);
 
