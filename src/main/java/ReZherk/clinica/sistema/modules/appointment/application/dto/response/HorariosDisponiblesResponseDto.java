@@ -26,6 +26,6 @@ public class HorariosDisponiblesResponseDto {
  public static class HorarioDisponible {
   private Integer idMedicoHorario;
   private LocalTime hora;
-  private Boolean disponible; // true = libre, false = ocupado
+  private Boolean disponible;
  }
 }

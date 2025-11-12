@@ -1,50 +1,67 @@
 package ReZherk.clinica.sistema.modules.appointment.application.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class CitaListadoResult {
+/**
+ * Proyección utilizada para mapear los resultados del procedimiento almacenado
+ * sp_listar_citas.
+ * 
+ * Spring Data JPA crea dinámicamente una implementación de esta interfaz
+ * basada en los alias de columnas devueltos por el procedimiento.
+ */
+public interface CitaListadoResult {
 
- private Integer idCita;
- private LocalDate fecha;
- private LocalTime hora;
- private String estado;
+ // Datos de la cita
+ Integer getIdCita();
+
+ LocalDate getFecha();
+
+ LocalTime getHora();
+
+ String getEstado();
+
+ String getMotivo();
 
  // Datos del paciente
- private Integer idPaciente;
- private String nombresPaciente;
- private String apellidosPaciente;
- private String documentoPaciente;
- private String emailPaciente;
- private String telefonoPaciente;
+ Integer getIdPaciente();
+
+ String getNombresPaciente();
+
+ String getApellidosPaciente();
+
+ String getDocumentoPaciente();
+
+ String getEmailPaciente();
+
+ String getTelefonoPaciente();
 
  // Datos del médico
- private Integer idMedico;
- private String nombresMedico;
- private String apellidosMedico;
- private String cmpMedico;
+ Integer getIdMedico();
+
+ String getNombresMedico();
+
+ String getApellidosMedico();
+
+ String getCmpMedico();
 
  // Datos de la especialidad
- private Integer idEspecialidad;
- private String nombreEspecialidad;
- private BigDecimal tarifa;
- private Byte duracion;
+ Integer getIdEspecialidad();
+
+ String getNombreEspecialidad();
+
+ BigDecimal getTarifa();
+
+ Integer getDuracion();
 
  // Datos del horario
- private String diaSemana;
- private LocalTime horaInicio;
- private LocalTime horaFin;
+ String getDiaSemana();
 
- private String motivo;
- private Long totalRegistros;
+ LocalTime getHoraInicio();
+
+ LocalTime getHoraFin();
+
+ // Campo auxiliar para la paginación
+ Long getTotalRegistros();
 }

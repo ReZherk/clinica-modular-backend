@@ -24,7 +24,7 @@ public class CitaCreateRequestDto {
  private Integer idPaciente;
 
  @NotNull(message = "La fecha de la cita es obligatoria")
- @Future(message = "La fecha de la cita debe ser futura")
+ @FutureOrPresent(message = "La fecha de la cita debe ser futura")
  private LocalDate fecha;
 
  @NotNull(message = "La hora de la cita es obligatoria")
