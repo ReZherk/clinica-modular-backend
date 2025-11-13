@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import ReZherk.clinica.sistema.core.application.dto.ApiResponse;
@@ -104,6 +105,13 @@ public class CitaAdminController {
 
   HorariosDisponiblesResponseDto horarios = citaService.listarHorariosMedicoCompleto(idMedico, fecha);
   return ResponseEntity.ok(new ApiResponse<>(true, "Horarios obtenidos exitosamente", horarios));
+ }
+
+ @PutMapping("/{idCita}/no-atendida")
+ @Operation(summary = "Marcar cita como NO_ATENDIDA", description = "Marca una cita como NO_ATENDIDA cuando el paciente no asistió")
+ public ResponseEntity<ApiResponse<CitaResponseDto>> marcarNoAtendida(@PathVariable Integer idCita) {
+  CitaResponseDto cita = citaService.marcarNoAtendida(idCita);
+  return ResponseEntity.ok(new ApiResponse<>(true, "Horarios obtenidos exitosamente", cita));
  }
 
 }

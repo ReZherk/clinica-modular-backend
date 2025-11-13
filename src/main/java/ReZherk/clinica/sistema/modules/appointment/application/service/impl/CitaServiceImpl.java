@@ -352,6 +352,21 @@ public class CitaServiceImpl implements CitaService {
         .build();
   }
 
+  @Override
+  @Transactional
+  public CitaResponseDto marcarNoAtendida(Integer idCita) {
+    log.info("Marcando cita ID: {} como NO_ATENDIDA", idCita);
+
+    Cita cita = citaValidator.validateMarcarNoAtendida(idCita);
+
+    cita.setEstado(EstadoCita.NO_ATENDIDA);
+    cita = citaRepository.save(cita);
+
+    log.info("Cita marcada como NO_ATENDIDA exitosamente");
+
+    return citaMapper.toResponseDto(cita);
+  }
+
   private boolean esDiaCorrecto(LocalDate fecha, Horario horario) {
     String diaSemana = fecha.getDayOfWeek()
         .getDisplayName(java.time.format.TextStyle.FULL, new java.util.Locale("es", "ES"));

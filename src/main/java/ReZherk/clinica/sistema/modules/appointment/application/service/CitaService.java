@@ -28,6 +28,8 @@ public interface CitaService {
 
  // Admin endpoints
 
+ CitaResponseDto marcarNoAtendida(Integer idCita);
+
  CitaResponseDto cancelarCitaAdmin(Integer idCita);
 
  CitaResponseDto completarCita(Integer idCita);

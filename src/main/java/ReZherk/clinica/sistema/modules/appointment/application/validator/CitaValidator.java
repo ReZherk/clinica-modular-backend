@@ -198,4 +198,26 @@ public class CitaValidator {
 
     return cita;
   }
+
+  /**
+   * Validar que no se pueda marcar como NO_ATENDIDA si ya está completada
+   */
+  public Cita validateMarcarNoAtendida(Integer idCita) {
+    Cita cita = citaRepository.findByIdWithDetails(idCita)
+        .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada"));
+
+    if (cita.getEstado() == EstadoCita.COMPLETADA) {
+      throw new BusinessException("No se puede marcar como NO_ATENDIDA una cita completada");
+    }
+
+    if (cita.getEstado() == EstadoCita.CANCELADA) {
+      throw new BusinessException("No se puede marcar como NO_ATENDIDA una cita cancelada");
+    }
+
+    if (cita.getEstado() == EstadoCita.NO_ATENDIDA) {
+      throw new BusinessException("La cita ya está marcada como NO_ATENDIDA");
+    }
+
+    return cita;
+  }
 }
