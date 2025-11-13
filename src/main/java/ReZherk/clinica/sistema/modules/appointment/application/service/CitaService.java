@@ -4,8 +4,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.SpecialtyResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCancelRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCreateRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaFiltroRequestDto;
@@ -41,6 +43,9 @@ public interface CitaService {
  Page<CitaListadoResult> listarCitasConFiltros(CitaFiltroRequestDto filtros);
 
  HorariosDisponiblesResponseDto listarHorariosMedicoCompleto(Integer idMedico, LocalDate fecha);
+
+ Page<MedicoResponseDto> getMedicos(String search, String searchType, Pageable pageable,
+   String especialidad);
 
  // Para ambos
  List<SpecialtyResponseDto> listarEspecialidades(Boolean estado);

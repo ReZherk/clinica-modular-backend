@@ -4,11 +4,15 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +20,11 @@ import org.springframework.web.bind.annotation.*;
 
 import ReZherk.clinica.sistema.core.application.dto.ApiResponse;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.SpecialtyResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCreateRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaFiltroRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaReprogramRequestDto;
+import ReZherk.clinica.sistema.modules.appointment.application.dto.request.HorariosDisponiblesRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.CitaListadoResult;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.CitaResponseDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.HorariosDisponiblesResponseDto;
@@ -28,6 +34,7 @@ import ReZherk.clinica.sistema.modules.appointment.application.service.CitaServi
 @RequestMapping("/api/admin/citas")
 @RequiredArgsConstructor
 @Tag(name = "Citas - Administrador", description = "Endpoints para gestión de citas por administradores")
+@Slf4j
 public class CitaAdminController {
 
  private final CitaService citaService;
@@ -120,6 +127,49 @@ public class CitaAdminController {
  public ResponseEntity<ApiResponse<CitaResponseDto>> marcarNoAtendida(@PathVariable Integer idCita) {
   CitaResponseDto cita = citaService.marcarNoAtendida(idCita);
   return ResponseEntity.ok(new ApiResponse<>(true, "Horarios obtenidos exitosamente", cita));
+ }
+
+ @PostMapping("/horarios-disponibles")
+ @Operation(summary = "Listar horarios disponibles", description = "Lista todos los horarios libres de un médico en una fecha específica")
+ public ResponseEntity<ApiResponse<HorariosDisponiblesResponseDto>> listarHorariosDisponibles(
+   @Valid @RequestBody HorariosDisponiblesRequestDto request) {
+
+  HorariosDisponiblesResponseDto horarios = citaService.listarHorariosDisponibles(request);
+  return ResponseEntity.ok(new ApiResponse<>(true, "Horarios disponibles obtenidos exitosamente", horarios));
+ }
+
+ @GetMapping("/doctors")
+ @Operation(summary = "Listar medicos buscados", description = "Lista todos los medicos que deben ser de la misma especialidad")
+ public ResponseEntity<ApiResponse<Page<MedicoResponseDto>>> getDoctors(
+   @RequestParam(required = false) String search,
+   @RequestParam(required = false, defaultValue = "documento") String searchType,
+   @RequestParam(defaultValue = "0") int page,
+   @RequestParam(defaultValue = "10") int size,
+   @RequestParam(defaultValue = "id") String sortBy,
+   @RequestParam(defaultValue = "ASC") String sorDirection,
+   @RequestParam(required = false) String especialidad) {
+
+  log.info(
+    "GET /api/cita/doctors -search: '{}', searchType: '{}',page: '{}', size:'{}', sortBy: '{}', sortDirection: {}",
+    search != null ? search : "Sin busqueda", searchType, page, size, sortBy, sorDirection);
+  try {
+   Sort.Direction direction = sorDirection.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+   Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+   Page<MedicoResponseDto> activeDoctors = citaService.getMedicos(search, searchType, pageable, especialidad);
+
+   log.info("Respuesta exitosa: {} medicos  encontrados de {} totales",
+     activeDoctors.getNumberOfElements(), activeDoctors.getTotalElements());
+
+   return ResponseEntity.ok(
+     new ApiResponse<>(true, "Medicos obtenidos exitosamente.", activeDoctors));
+
+  } catch (Exception e) {
+   log.error("Error al obtener medicos activos", e);
+   return ResponseEntity.internalServerError()
+     .body(new ApiResponse<>(false, "Error al obtener medicos activos: " + e.getMessage(), null));
+  }
  }
 
 }

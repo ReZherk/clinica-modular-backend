@@ -108,6 +108,9 @@ public class SecurityConfig {
                 "/api/admins/{id}/deactivate")
             .hasAuthority("SUPER_ADMIN")
 
+            .requestMatchers("/api/admin/citas/**")
+            .hasAuthority("APPOINTMENT_MANAGE")
+
             // Todo lo demás requiere autenticación
             .anyRequest().authenticated())
         // Sin estado (JWT)

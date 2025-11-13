@@ -22,6 +22,8 @@ import ReZherk.clinica.sistema.core.shared.enums.EstadoCita;
 import ReZherk.clinica.sistema.core.shared.exception.BusinessException;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.SpecialtyResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.dto.response.MedicoResponseDto;
+import ReZherk.clinica.sistema.modules.admin.application.service.MedicoService;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCancelRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCreateRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaFiltroRequestDto;
@@ -50,6 +52,7 @@ public class CitaServiceImpl implements CitaService {
   private final CitaMapper citaMapper;
   private final CitaValidator citaValidator;
   private final EspecialidadRepository especialidadRepository;
+  private final MedicoService medicoService;
 
   @Override
   @Transactional
@@ -385,6 +388,12 @@ public class CitaServiceImpl implements CitaService {
         .stream()
         .map(CitaMapper::toSimpleDto)
         .toList();
+  }
+
+  @Override
+  public Page<MedicoResponseDto> getMedicos(String search, String searchType, Pageable pageable,
+      String especialidad) {
+    return medicoService.getActiveMedicos(search, searchType, pageable, especialidad);
   }
 
   private boolean esDiaCorrecto(LocalDate fecha, Horario horario) {
