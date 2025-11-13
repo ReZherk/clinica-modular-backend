@@ -15,11 +15,13 @@ import ReZherk.clinica.sistema.core.domain.entity.MedicoDetalle;
 import ReZherk.clinica.sistema.core.domain.entity.MedicoHorario;
 import ReZherk.clinica.sistema.core.domain.entity.Usuario;
 import ReZherk.clinica.sistema.core.domain.repository.CitaRepository;
+import ReZherk.clinica.sistema.core.domain.repository.EspecialidadRepository;
 import ReZherk.clinica.sistema.core.domain.repository.MedicoHorarioRepository;
 import ReZherk.clinica.sistema.core.domain.repository.UsuarioRepository;
 import ReZherk.clinica.sistema.core.shared.enums.EstadoCita;
 import ReZherk.clinica.sistema.core.shared.exception.BusinessException;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
+import ReZherk.clinica.sistema.modules.appointment.application.dto.response.SpecialtyResponseDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCancelRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCreateRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaFiltroRequestDto;
@@ -47,6 +49,7 @@ public class CitaServiceImpl implements CitaService {
   private final UsuarioRepository usuarioRepository;
   private final CitaMapper citaMapper;
   private final CitaValidator citaValidator;
+  private final EspecialidadRepository especialidadRepository;
 
   @Override
   @Transactional
@@ -128,6 +131,10 @@ public class CitaServiceImpl implements CitaService {
 
     Usuario medico = usuarioRepository.findById(request.getIdMedico())
         .orElseThrow(() -> new ResourceNotFoundException("Médico no encontrado"));
+
+    if (!medico.getEstadoRegistro()) {
+      throw new BusinessException("Este medico esta desactivado");
+    }
 
     MedicoDetalle medicoDetalle = medico.getMedicoDetalle();
     if (medicoDetalle == null) {
@@ -297,6 +304,10 @@ public class CitaServiceImpl implements CitaService {
     Usuario medico = usuarioRepository.findById(idMedico)
         .orElseThrow(() -> new ResourceNotFoundException("Médico no encontrado"));
 
+    if (!medico.getEstadoRegistro()) {
+      throw new BusinessException("Este medico esta desactivado");
+    }
+
     MedicoDetalle medicoDetalle = medico.getMedicoDetalle();
     if (medicoDetalle == null) {
       throw new BusinessException("El usuario no es un médico");
@@ -365,6 +376,15 @@ public class CitaServiceImpl implements CitaService {
     log.info("Cita marcada como NO_ATENDIDA exitosamente");
 
     return citaMapper.toResponseDto(cita);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<SpecialtyResponseDto> listarEspecialidades(Boolean estado) {
+    return especialidadRepository.findByEstadoRegistroOrderByNombreEspecialidad(estado)
+        .stream()
+        .map(CitaMapper::toSimpleDto)
+        .toList();
   }
 
   private boolean esDiaCorrecto(LocalDate fecha, Horario horario) {

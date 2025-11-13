@@ -5,10 +5,10 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 /**
- * Proyección utilizada para mapear los resultados del procedimiento almacenado
+ * Proyeccion utilizada para mapear los resultados del procedimiento almacenado
  * sp_listar_citas.
  * 
- * Spring Data JPA crea dinámicamente una implementación de esta interfaz
+ * Spring Data JPA crea dinamicamente una implementacion de esta interfaz
  * basada en los alias de columnas devueltos por el procedimiento.
  */
 public interface CitaListadoResult {
@@ -37,12 +37,14 @@ public interface CitaListadoResult {
 
  String getTelefonoPaciente();
 
- // Datos del médico
+ // Datos del medico
  Integer getIdMedico();
 
  String getNombresMedico();
 
  String getApellidosMedico();
+
+ String getDniMedico();
 
  String getCmpMedico();
 
@@ -62,6 +64,6 @@ public interface CitaListadoResult {
 
  LocalTime getHoraFin();
 
- // Campo auxiliar para la paginación
+ // Campo auxiliar para la paginacion
  Long getTotalRegistros();
 }

@@ -1,9 +1,11 @@
 package ReZherk.clinica.sistema.modules.appointment.application.service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 
+import ReZherk.clinica.sistema.modules.appointment.application.dto.response.SpecialtyResponseDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCancelRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCreateRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaFiltroRequestDto;
@@ -39,4 +41,7 @@ public interface CitaService {
  Page<CitaListadoResult> listarCitasConFiltros(CitaFiltroRequestDto filtros);
 
  HorariosDisponiblesResponseDto listarHorariosMedicoCompleto(Integer idMedico, LocalDate fecha);
+
+ // Para ambos
+ List<SpecialtyResponseDto> listarEspecialidades(Boolean estado);
 }

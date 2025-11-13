@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import ReZherk.clinica.sistema.core.application.dto.ApiResponse;
+import ReZherk.clinica.sistema.modules.appointment.application.dto.response.SpecialtyResponseDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCreateRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaFiltroRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaReprogramRequestDto;
@@ -61,6 +63,13 @@ public class CitaAdminController {
 
   CitaResponseDto cita = citaService.reprogramarCita(request);
   return ResponseEntity.ok(new ApiResponse<>(true, "Cita reprogramada exitosamente", cita));
+ }
+
+ @GetMapping("/specialty")
+ public ResponseEntity<ApiResponse<List<SpecialtyResponseDto>>> listActiveSpecialties() {
+
+  List<SpecialtyResponseDto> result = citaService.listarEspecialidades(true);
+  return ResponseEntity.ok(new ApiResponse<>(true, "Se obtuvo exitosamente las especialidades activas", result));
  }
 
  @GetMapping
