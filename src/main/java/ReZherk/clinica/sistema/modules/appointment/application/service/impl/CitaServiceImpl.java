@@ -267,9 +267,10 @@ public class CitaServiceImpl implements CitaService {
   public Page<CitaListadoResult> listarCitasConFiltros(CitaFiltroRequestDto filtros) {
 
     List<CitaListadoResult> resultados = citaRepository.listarCitasConFiltros(
-        filtros.getIdMedico(),
+        filtros.getCmpMedico(),
+        filtros.getDniMedico(),
+        filtros.getNombreMedico(),
         filtros.getIdEspecialidad(),
-        filtros.getIdPaciente(),
         filtros.getEstado(),
         filtros.getFecha(),
         filtros.getFechaInicio(),

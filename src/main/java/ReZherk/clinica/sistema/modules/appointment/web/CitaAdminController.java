@@ -64,11 +64,14 @@ public class CitaAdminController {
  }
 
  @GetMapping
- @Operation(summary = "Listar todas las citas", description = "Lista citas con filtros opcionales usando Stored Procedure")
+ @Operation(summary = "Listar todas las citas", description = "Lista citas con filtros opcionales usando Stored Procedure. "
+   +
+   "Búsqueda independiente por CMP, DNI o nombre completo del médico.")
  public ResponseEntity<ApiResponse<Page<CitaListadoResult>>> listarCitas(
-   @RequestParam(required = false) Integer idMedico,
+   @RequestParam(required = false) String cmpMedico,
+   @RequestParam(required = false) String dniMedico,
+   @RequestParam(required = false) String nombreMedico,
    @RequestParam(required = false) Integer idEspecialidad,
-   @RequestParam(required = false) Integer idPaciente,
    @RequestParam(required = false) String estado,
    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
@@ -77,9 +80,10 @@ public class CitaAdminController {
    @RequestParam(defaultValue = "10") Integer size) {
 
   CitaFiltroRequestDto filtros = CitaFiltroRequestDto.builder()
-    .idMedico(idMedico)
+    .cmpMedico(cmpMedico)
+    .dniMedico(dniMedico)
+    .nombreMedico(nombreMedico)
     .idEspecialidad(idEspecialidad)
-    .idPaciente(idPaciente)
     .estado(estado)
     .fecha(fecha)
     .fechaInicio(fechaInicio)

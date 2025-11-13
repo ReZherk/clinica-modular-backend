@@ -14,10 +14,12 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class CitaFiltroRequestDto {
 
- private Integer idMedico;
+ private String cmpMedico; // CMP del médico
+ private String dniMedico; // DNI del médico
+ private String nombreMedico; // Nombre completo del médico
+
  private Integer idEspecialidad;
- private Integer idPaciente;
- private String estado; // estos: RESERVADA, CANCELADA, COMPLETADA
+ private String estado; // RESERVADA, CANCELADA, COMPLETADA
 
  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
  private LocalDate fecha;
