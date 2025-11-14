@@ -52,8 +52,7 @@ public class SecurityConfig {
                 "/api-docs/**",
                 "/swagger-ui/**",
                 "/swagger-ui.html",
-                "/api/auth/**", // login, refresh, etc.
-                "/api/patient/register" // registro de pacientes
+                "/api/auth/**" // login, refresh, etc.
             ).permitAll()
 
             // Endpoints restringidos
@@ -110,6 +109,9 @@ public class SecurityConfig {
 
             .requestMatchers("/api/admin/citas/**")
             .hasAuthority("APPOINTMENT_MANAGE")
+
+            .requestMatchers("/api/patient/register").permitAll()
+            .requestMatchers("/api/patient/**").hasAuthority("PATIENT_VIEW")
 
             // Todo lo demás requiere autenticación
             .anyRequest().authenticated())
