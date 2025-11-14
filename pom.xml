@@ -57,6 +57,15 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
+
+		<!-- Spring Boot Starter Mail: Proporciona soporte para envío de correos electrónicos
+     Incluye JavaMailSender y configuración automática de SMTP.
+     Usar cuando: necesites enviar emails (notificaciones, recuperación de contraseña, etc.) -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-mail</artifactId>
+</dependency>
+
 		<!-- Flyway: migraciones de base de datos (control de versiones en DB) -->
 		<dependency>
 			<groupId>org.flywaydb</groupId>
