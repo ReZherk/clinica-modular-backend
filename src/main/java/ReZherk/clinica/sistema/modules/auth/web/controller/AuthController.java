@@ -5,9 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import ReZherk.clinica.sistema.modules.auth.application.dto.request.ForgotPasswordRequestDto;
 import ReZherk.clinica.sistema.modules.auth.application.dto.request.LoginRequestDto;
+import ReZherk.clinica.sistema.modules.auth.application.dto.request.ResetPasswordRequestDto;
 import ReZherk.clinica.sistema.modules.auth.application.dto.response.LoginResponseDto;
 import ReZherk.clinica.sistema.modules.auth.application.service.AuthService;
+import ReZherk.clinica.sistema.modules.auth.application.service.PasswordService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -15,18 +18,31 @@ import ReZherk.clinica.sistema.modules.auth.application.service.AuthService;
 @CrossOrigin(origins = "*")
 public class AuthController {
 
- private final AuthService authService;
+  private final AuthService authService;
+  private final PasswordService passwordService;
 
- @PostMapping("/login")
- public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto loginDto) {
-  try {
-   LoginResponseDto response = authService.login(loginDto);
-   return ResponseEntity.ok(response);
-  } catch (Exception e) {
-   return ResponseEntity.badRequest()
-     .body(new LoginResponseDto(false, "Error en login: " + e.getMessage()));
+  @PostMapping("/login")
+  public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto loginDto) {
+    try {
+      LoginResponseDto response = authService.login(loginDto);
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      return ResponseEntity.badRequest()
+          .body(new LoginResponseDto(false, "Error en login: " + e.getMessage()));
+    }
+
   }
 
- }
+  @PostMapping("/forgot")
+  public String enviarCorreo(@RequestBody ForgotPasswordRequestDto request) {
+    passwordService.enviarCorreoRecuperacion(request.getEmail());
+    return "Se envió un enlace a su correo";
+  }
+
+  @PostMapping("/reset")
+  public String resetear(@RequestBody ResetPasswordRequestDto request) {
+    passwordService.resetearPassword(request.getToken(), request.getNuevaPassword());
+    return "La contraseña fue restablecida exitosamente";
+  }
 
 }
