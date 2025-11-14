@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import ReZherk.clinica.sistema.core.application.dto.ApiResponse;
-import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePasswordRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCancelRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCreateRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.HorariosDisponiblesRequestDto;
