@@ -73,6 +73,19 @@ public class PacienteService {
     return pacienteMapper.toResponseDto(usuario);
   }
 
+  public void cambiarPassword(Integer userId, String actual, String nueva) {
+
+    Usuario usuario = usuarioRepository.findById(userId)
+        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+    if (!passwordEncoder.matches(actual, usuario.getPasswordHash())) {
+      throw new RuntimeException("La contraseña actual es incorrecta");
+    }
+
+    usuario.setPasswordHash(passwordEncoder.encode(nueva));
+    usuarioRepository.save(usuario);
+  }
+
   // ============================
   // MÉTODOS AUXILIARES
   // ============================

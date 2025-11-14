@@ -9,11 +9,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import ReZherk.clinica.sistema.core.application.dto.ApiResponse;
+import ReZherk.clinica.sistema.modules.admin.application.dto.request.ChangePasswordRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCancelRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCreateRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.HorariosDisponiblesRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.CitaResponseDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.HorariosDisponiblesResponseDto;
+import ReZherk.clinica.sistema.modules.patient.application.dto.request.ChangePasswordDto;
 import ReZherk.clinica.sistema.modules.patient.application.dto.request.RegisterPacienteDto;
 import ReZherk.clinica.sistema.modules.patient.application.dto.response.RegisterResponseDto;
 import ReZherk.clinica.sistema.modules.patient.application.service.PacienteService;
@@ -37,6 +39,14 @@ public class PatientController {
       return ResponseEntity.badRequest()
           .body(new RegisterResponseDto(false, "Error en registro: " + e.getMessage()));
     }
+  }
+
+  @PostMapping("/change-password")
+  public String cambiarPassword(@RequestBody ChangePasswordDto request,
+      @RequestAttribute("userId") Integer userId) {
+
+    pacienteService.cambiarPassword(userId, request.getPasswordActual(), request.getPasswordNueva());
+    return "Contraseña actualizada correctamente";
   }
 
   /////////////////////////////////////////////////////////////////////
