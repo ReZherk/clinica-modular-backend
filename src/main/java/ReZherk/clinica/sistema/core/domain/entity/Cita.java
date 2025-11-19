@@ -47,6 +47,10 @@ public class Cita {
  @Column(name = "motivo", length = 500)
  private String motivo;
 
+ @ManyToOne(fetch = FetchType.LAZY)
+ @JoinColumn(name = "id_pago")
+ private Pago pago;
+
  @Column(name = "fecha_creacion", nullable = false, updatable = false)
  private LocalDateTime fechaCreacion;
 

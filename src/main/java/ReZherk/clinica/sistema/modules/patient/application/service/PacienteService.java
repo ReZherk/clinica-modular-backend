@@ -19,6 +19,8 @@ import ReZherk.clinica.sistema.modules.patient.application.dto.response.Register
 import ReZherk.clinica.sistema.modules.patient.application.dto.response.PatientCreationResponseDto;
 import ReZherk.clinica.sistema.modules.patient.application.mapper.PacienteDetalleMapper;
 import ReZherk.clinica.sistema.modules.patient.application.mapper.PacienteMapper;
+import ReZherk.clinica.sistema.modules.payment.application.dto.response.SeguroResponseDto;
+import ReZherk.clinica.sistema.modules.payment.application.service.SeguroService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -26,6 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -39,6 +42,7 @@ public class PacienteService {
   private final PacienteMapper pacienteMapper;
   private final PasswordEncoder passwordEncoder;
   private final CitaService citaService;
+  private final SeguroService seguroService;
 
   @Transactional
   public RegisterResponseDto registerPaciente(RegisterPacienteDto registerDto) {
@@ -144,4 +148,12 @@ public class PacienteService {
   public HorariosDisponiblesResponseDto listarHorariosDisponibles(HorariosDisponiblesRequestDto request) {
     return citaService.listarHorariosDisponibles(request);
   }
+
+  // Apartir de aqui son del modulo de pagos
+
+  @Transactional(readOnly = true)
+  public List<SeguroResponseDto> listarSegurosConConvenio() {
+    return seguroService.listarSegurosConConvenio();
+  }
+
 }

@@ -3,6 +3,8 @@ package ReZherk.clinica.sistema.modules.patient.web.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import ReZherk.clinica.sistema.modules.patient.application.dto.request.ChangePas
 import ReZherk.clinica.sistema.modules.patient.application.dto.request.RegisterPacienteDto;
 import ReZherk.clinica.sistema.modules.patient.application.dto.response.RegisterResponseDto;
 import ReZherk.clinica.sistema.modules.patient.application.service.PacienteService;
+import ReZherk.clinica.sistema.modules.payment.application.dto.response.SeguroResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
@@ -94,6 +97,13 @@ public class PatientController {
 
     HorariosDisponiblesResponseDto horarios = pacienteService.listarHorariosDisponibles(request);
     return ResponseEntity.ok(new ApiResponse<>(true, "Horarios disponibles obtenidos exitosamente", horarios));
+  }
+
+  @GetMapping("/convenios")
+  @Operation(summary = "Listar seguros con convenio", description = "Lista todos los seguros que tienen convenio con la clinica y cubren el costo total")
+  public ResponseEntity<ApiResponse<List<SeguroResponseDto>>> listarSegurosConConvenio() {
+    List<SeguroResponseDto> seguros = pacienteService.listarSegurosConConvenio();
+    return ResponseEntity.ok(new ApiResponse<>(true, "Se listo los seguros  con cobertura completa", seguros));
   }
 
 }
