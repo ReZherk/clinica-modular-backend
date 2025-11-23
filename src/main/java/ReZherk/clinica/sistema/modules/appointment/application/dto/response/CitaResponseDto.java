@@ -25,6 +25,7 @@ public class CitaResponseDto {
  private String motivo;
  private LocalDateTime fechaCreacion;
  private LocalDateTime fechaActualizacion;
+ private String linkReunion;
 
  // Información del paciente
  private PacienteInfoDto paciente;

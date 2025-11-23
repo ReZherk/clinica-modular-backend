@@ -19,5 +19,7 @@ public interface EspecialidadRepository extends JpaRepository<Especialidad, Inte
 
  Optional<Especialidad> findByNombreEspecialidadIgnoreCase(String nombreEspecialidad);
 
+ Optional<Especialidad> findByIdAndEstadoRegistroTrue(Integer id);
+
  boolean existsByNombreEspecialidadIgnoreCase(String nombreEspecialidad);
 }

@@ -160,6 +160,9 @@ public class CitaServiceImpl implements CitaService {
     for (MedicoHorario mh : medicoHorarios) {
       Horario horario = mh.getHorario();
 
+      log.info("Fecha enviada: {} → DiaSemana: {}", request.getFecha(), request.getFecha().getDayOfWeek());
+      log.info("Horario ID {} → DiaSemana DB: {}", horario.getIdHorario(), horario.getDiaSemana());
+
       // Verificar si el día de la semana coincide
       if (!esDiaCorrecto(request.getFecha(), horario)) {
         continue;
