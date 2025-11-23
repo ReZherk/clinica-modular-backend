@@ -20,6 +20,8 @@ import ReZherk.clinica.sistema.modules.patient.application.dto.request.ChangePas
 import ReZherk.clinica.sistema.modules.patient.application.dto.request.RegisterPacienteDto;
 import ReZherk.clinica.sistema.modules.patient.application.dto.response.RegisterResponseDto;
 import ReZherk.clinica.sistema.modules.patient.application.service.PacienteService;
+import ReZherk.clinica.sistema.modules.payment.application.dto.request.VincularSeguroRequestDto;
+import ReZherk.clinica.sistema.modules.payment.application.dto.response.PacienteSeguroResponseDto;
 import ReZherk.clinica.sistema.modules.payment.application.dto.response.SeguroResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 
@@ -104,6 +106,16 @@ public class PatientController {
   public ResponseEntity<ApiResponse<List<SeguroResponseDto>>> listarSegurosConConvenio() {
     List<SeguroResponseDto> seguros = pacienteService.listarSegurosConConvenio();
     return ResponseEntity.ok(new ApiResponse<>(true, "Se listo los seguros  con cobertura completa", seguros));
+  }
+
+  @PostMapping("/vincular")
+  @Operation(summary = "Vincular seguro", description = "Vincula un seguro al paciente con su numero de poliza y fechas de vigencia")
+  public ResponseEntity<ApiResponse<PacienteSeguroResponseDto>> vincularSeguro(
+      @Valid @RequestBody VincularSeguroRequestDto request) {
+
+    PacienteSeguroResponseDto seguro = pacienteService.vincularSeguro(request);
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(new ApiResponse<>(true, "Seguro vinculado exitosamente", seguro));
   }
 
 }

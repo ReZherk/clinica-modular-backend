@@ -19,6 +19,8 @@ import ReZherk.clinica.sistema.modules.patient.application.dto.response.Register
 import ReZherk.clinica.sistema.modules.patient.application.dto.response.PatientCreationResponseDto;
 import ReZherk.clinica.sistema.modules.patient.application.mapper.PacienteDetalleMapper;
 import ReZherk.clinica.sistema.modules.patient.application.mapper.PacienteMapper;
+import ReZherk.clinica.sistema.modules.payment.application.dto.request.VincularSeguroRequestDto;
+import ReZherk.clinica.sistema.modules.payment.application.dto.response.PacienteSeguroResponseDto;
 import ReZherk.clinica.sistema.modules.payment.application.dto.response.SeguroResponseDto;
 import ReZherk.clinica.sistema.modules.payment.application.service.SeguroService;
 import lombok.RequiredArgsConstructor;
@@ -154,6 +156,11 @@ public class PacienteService {
   @Transactional(readOnly = true)
   public List<SeguroResponseDto> listarSegurosConConvenio() {
     return seguroService.listarSegurosConConvenio();
+  }
+
+  @Transactional
+  public PacienteSeguroResponseDto vincularSeguro(VincularSeguroRequestDto request) {
+    return seguroService.vincularSeguro(request);
   }
 
 }
