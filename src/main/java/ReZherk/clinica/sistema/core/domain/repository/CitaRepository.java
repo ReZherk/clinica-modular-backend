@@ -3,10 +3,12 @@ package ReZherk.clinica.sistema.core.domain.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ReZherk.clinica.sistema.core.domain.entity.Cita;
+import ReZherk.clinica.sistema.core.shared.enums.EstadoCita;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.CitaListadoResult;
 
 import java.time.LocalDate;
@@ -93,4 +95,55 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
                         @Param("p_page") Integer page,
                         @Param("p_size") Integer size);
 
+        //////////////////////////
+        // Obtener citas del medico en una fecha especifica
+        @Query("SELECT c FROM Cita c " +
+                        "JOIN FETCH c.medicoHorario mh " +
+                        "JOIN FETCH c.paciente p " +
+                        "LEFT JOIN FETCH c.detalleCita " +
+                        "WHERE mh.medico.id = :idMedico " +
+                        "AND c.fecha = :fecha " +
+                        "ORDER BY c.hora ASC")
+        List<Cita> findCitasByMedicoAndFecha(
+                        @Param("idMedico") Integer idMedico,
+                        @Param("fecha") LocalDate fecha);
+
+        // Obtener historial de citas de un paciente con detalles
+        @Query("SELECT c FROM Cita c " +
+                        "JOIN FETCH c.medicoHorario mh " +
+                        "JOIN FETCH mh.medico m " +
+                        "JOIN FETCH m.medicoDetalle md " +
+                        "JOIN FETCH md.especialidad " +
+                        "LEFT JOIN FETCH c.detalleCita " +
+                        "WHERE c.paciente.id = :idPaciente " +
+                        "ORDER BY c.fecha DESC, c.hora DESC")
+        List<Cita> findHistorialByPacienteId(@Param("idPaciente") Integer idPaciente);
+
+        // Buscar citas con filtros multiples
+        @Query("SELECT DISTINCT c FROM Cita c " +
+                        "JOIN FETCH c.medicoHorario mh " +
+                        "JOIN FETCH c.paciente p " +
+                        "LEFT JOIN FETCH c.detalleCita " +
+                        "WHERE (:dniPaciente IS NULL OR p.numeroDocumento LIKE %:dniPaciente%) " +
+                        "AND (:nombrePaciente IS NULL OR CONCAT(p.nombres, ' ', p.apellidos) LIKE %:nombrePaciente%) " +
+                        "AND (:fecha IS NULL OR c.fecha = :fecha) " +
+                        "AND (:estado IS NULL OR c.estado = :estado) " +
+                        "ORDER BY c.fecha DESC, c.hora DESC")
+        Page<Cita> findCitasConFiltros(
+                        @Param("dniPaciente") String dniPaciente,
+                        @Param("nombrePaciente") String nombrePaciente,
+                        @Param("fecha") LocalDate fecha,
+                        @Param("estado") EstadoCita estado,
+                        Pageable pageable);
+
+        // Actualizar enlace de reunion para todas las citas del medico en una fecha
+        @Modifying
+        @Query("UPDATE Cita c SET c.enlaceReunion = :enlace " +
+                        "WHERE c.medicoHorario.medico.id = :idMedico " +
+                        "AND c.fecha = :fecha " +
+                        "AND c.estado = 'RESERVADA'")
+        int updateEnlaceReunionByMedicoAndFecha(
+                        @Param("idMedico") Integer idMedico,
+                        @Param("fecha") LocalDate fecha,
+                        @Param("enlace") String enlace);
 }

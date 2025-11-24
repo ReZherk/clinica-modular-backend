@@ -47,6 +47,12 @@ public class Cita {
  @Column(name = "motivo", length = 500)
  private String motivo;
 
+ @Column(name = "enlace_reunion", length = 500)
+ private String enlaceReunion;
+
+ @OneToOne(mappedBy = "cita", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+ private DetalleCita detalleCita;
+
  @ManyToOne(fetch = FetchType.LAZY)
  @JoinColumn(name = "id_pago")
  private Pago pago;
