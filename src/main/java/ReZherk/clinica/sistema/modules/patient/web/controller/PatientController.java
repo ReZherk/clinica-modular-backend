@@ -24,9 +24,9 @@ import ReZherk.clinica.sistema.modules.appointment.application.dto.response.Cita
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.HorariosDisponiblesResponseDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.SpecialtyResponseDto;
 import ReZherk.clinica.sistema.modules.patient.application.dto.request.ChangePasswordDto;
-import ReZherk.clinica.sistema.modules.patient.application.dto.request.RegisterPacienteDto;
+import ReZherk.clinica.sistema.modules.patient.application.dto.request.PatientDataRequestDto;
 import ReZherk.clinica.sistema.modules.patient.application.dto.response.DoctorBySpecialtyResponseDto;
-import ReZherk.clinica.sistema.modules.patient.application.dto.response.RegisterResponseDto;
+import ReZherk.clinica.sistema.modules.patient.application.dto.response.PatientDataResponseDto;
 import ReZherk.clinica.sistema.modules.patient.application.service.PacienteService;
 import ReZherk.clinica.sistema.modules.payment.application.dto.request.PagoSeguroRequestDto;
 import ReZherk.clinica.sistema.modules.payment.application.dto.request.PagoTarjetaRequestDto;
@@ -48,15 +48,32 @@ public class PatientController {
   private final PacienteService pacienteService;
 
   @PostMapping("/register")
-  public ResponseEntity<RegisterResponseDto> registerPaciente(
-      @Valid @RequestBody RegisterPacienteDto registerDto) {
-    try {
-      RegisterResponseDto response = pacienteService.registerPaciente(registerDto);
-      return new ResponseEntity<>(response, HttpStatus.CREATED);
-    } catch (Exception e) {
-      return ResponseEntity.badRequest()
-          .body(new RegisterResponseDto(false, "Error en registro: " + e.getMessage()));
-    }
+  @Operation(summary = "Registrar un nuevo paciente", description = "Permite crear un nuevo paciente en el sistema. Valida los datos enviados y retorna la información del paciente registrado.")
+  public ResponseEntity<ApiResponse<PatientDataResponseDto>> registerPaciente(
+      @Valid @RequestBody PatientDataRequestDto registerDto) {
+
+    PatientDataResponseDto response = pacienteService.registerPaciente(registerDto);
+
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(new ApiResponse<>(true, "Paciente registrado exitosamente", response));
+  }
+
+  @GetMapping("/{id}")
+  @Operation(summary = "Obtener datos del paciente", description = "Devuelve toda la información registrada del paciente según su ID")
+  public ResponseEntity<ApiResponse<PatientDataResponseDto>> obtenerPaciente(@PathVariable Integer id) {
+
+    PatientDataResponseDto response = pacienteService.obtenerPaciente(id);
+
+    return ResponseEntity.ok(
+        new ApiResponse<>(true, "Datos del paciente obtenidos exitosamente", response));
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<ApiResponse<Void>> updateUsuario(@PathVariable Integer id,
+      @RequestBody PatientDataRequestDto data) {
+    pacienteService.modificarPaciente(id, data);
+
+    return ResponseEntity.ok(new ApiResponse<>(true, "Se actualizo satisfactoriamente el paciente", null));
   }
 
   @PostMapping("/change-password")
@@ -224,11 +241,9 @@ public class PatientController {
     return ResponseEntity.ok(new ApiResponse<>(true, "Resumen de pago obtenido  correctamente", resumen));
   }
 
-  @GetMapping("/{idPago}")
+  @GetMapping("/pago/{idPago}")
   @Operation(summary = "Obtener detalle de pago", description = "Obtiene el detalle completo de un pago especifico")
-  public ResponseEntity<ApiResponse<PagoResponseDto>> obtenerDetallePago(
-      @PathVariable Integer idPago) {
-
+  public ResponseEntity<ApiResponse<PagoResponseDto>> obtenerDetallePago(@PathVariable Integer idPago) {
     PagoResponseDto pago = pacienteService.obtenerDetallePago(idPago);
     return ResponseEntity.ok(new ApiResponse<>(true, "Detalle de pago obtenido exitosamente", pago));
   }

@@ -1,13 +1,14 @@
 package ReZherk.clinica.sistema.modules.patient.application.mapper;
 
+import ReZherk.clinica.sistema.core.domain.entity.PacienteDetalle;
+import ReZherk.clinica.sistema.core.domain.entity.RolPerfil;
 import ReZherk.clinica.sistema.core.domain.entity.TipoDocumento;
 import ReZherk.clinica.sistema.core.domain.entity.Usuario;
 import ReZherk.clinica.sistema.core.domain.repository.TipoDocumentoRepository;
 import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
-import ReZherk.clinica.sistema.modules.patient.application.dto.request.RegisterPacienteDto;
-import ReZherk.clinica.sistema.modules.patient.application.dto.response.RegisterResponseDto;
+import ReZherk.clinica.sistema.modules.patient.application.dto.request.PatientDataRequestDto;
+import ReZherk.clinica.sistema.modules.patient.application.dto.response.PatientDataResponseDto;
 import lombok.RequiredArgsConstructor;
-import ReZherk.clinica.sistema.modules.patient.application.dto.response.PatientCreationResponseDto;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -19,7 +20,7 @@ public class PacienteMapper {
 
   private final TipoDocumentoRepository tipoDocumentoRepository;
 
-  public Usuario toEntity(RegisterPacienteDto dto) {
+  public Usuario toEntity(PatientDataRequestDto dto) {
     if (dto == null)
       return null;
 
@@ -37,29 +38,31 @@ public class PacienteMapper {
         .build();
   }
 
-  public RegisterResponseDto toRegisterResponse(Usuario usuario, String message) {
-    return RegisterResponseDto.builder()
-        .success(true)
-        .id(usuario.getId())
-        .message(message)
-        .usuario(
-            toResponseDto(usuario))
-        .build();
-  }
+  public PatientDataResponseDto toRegisterResponse(Usuario usuario) {
 
-  public PatientCreationResponseDto toResponseDto(Usuario usuario) {
     Set<String> rolesNames = usuario.getPerfiles().stream()
-        .map(rolPerfil -> rolPerfil
-            .getNombre())
+        .map(RolPerfil::getNombre)
         .collect(Collectors.toSet());
 
-    return PatientCreationResponseDto.builder()
+    PacienteDetalle detalle = usuario.getPacienteDetalle();
+
+    return PatientDataResponseDto.builder()
         .id(usuario.getId())
+        .tipoDocumento(usuario.getTipoDocumento() != null ? usuario.getTipoDocumento().getNombre() : null)
+        .dni(usuario.getNumeroDocumento())
+
         .nombres(usuario.getNombres())
         .apellidos(usuario.getApellidos())
-        .dni(usuario.getNumeroDocumento())
-        .email(usuario.getEmail())
+        .fechaNacimiento(detalle != null ? detalle.getFechaNacimiento().toString() : null)
+
         .telefono(usuario.getTelefono())
+        .email(usuario.getEmail())
+
+        .departamento(detalle != null ? detalle.getDepartamento() : null)
+        .provincia(detalle != null ? detalle.getProvincia() : null)
+        .distrito(detalle != null ? detalle.getDistrito() : null)
+        .direccion(detalle != null ? detalle.getDireccion() : null)
+
         .estadoRegistro(usuario.getEstadoRegistro())
         .roles(rolesNames)
         .build();

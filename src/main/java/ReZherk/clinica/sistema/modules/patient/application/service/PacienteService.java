@@ -17,10 +17,9 @@ import ReZherk.clinica.sistema.modules.appointment.application.dto.response.Cita
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.HorariosDisponiblesResponseDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.SpecialtyResponseDto;
 import ReZherk.clinica.sistema.modules.appointment.application.service.CitaService;
-import ReZherk.clinica.sistema.modules.patient.application.dto.request.RegisterPacienteDto;
-import ReZherk.clinica.sistema.modules.patient.application.dto.response.RegisterResponseDto;
+import ReZherk.clinica.sistema.modules.patient.application.dto.request.PatientDataRequestDto;
+import ReZherk.clinica.sistema.modules.patient.application.dto.response.PatientDataResponseDto;
 import ReZherk.clinica.sistema.modules.patient.application.dto.response.DoctorBySpecialtyResponseDto;
-import ReZherk.clinica.sistema.modules.patient.application.dto.response.PatientCreationResponseDto;
 import ReZherk.clinica.sistema.modules.patient.application.mapper.DoctorBySpecialtyMapper;
 import ReZherk.clinica.sistema.modules.patient.application.mapper.PacienteDetalleMapper;
 import ReZherk.clinica.sistema.modules.patient.application.mapper.PacienteMapper;
@@ -35,6 +34,7 @@ import ReZherk.clinica.sistema.modules.payment.application.dto.response.ResumenP
 import ReZherk.clinica.sistema.modules.payment.application.dto.response.SeguroResponseDto;
 import ReZherk.clinica.sistema.modules.payment.application.service.PagoService;
 import ReZherk.clinica.sistema.modules.payment.application.service.SeguroService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -69,7 +69,7 @@ public class PacienteService {
   private final PagoService pagoService;
 
   @Transactional
-  public RegisterResponseDto registerPaciente(RegisterPacienteDto registerDto) {
+  public PatientDataResponseDto registerPaciente(PatientDataRequestDto registerDto) {
 
     validateEmailNotExists(registerDto.getEmail());
     validateDniNotExists(registerDto.getNumeroDocumento());
@@ -82,23 +82,38 @@ public class PacienteService {
         .toEntity(registerDto.getPacienteDetalle(), savedUsuario);
     pacienteDetalleRepository.save(detalle);
 
-    return pacienteMapper.toRegisterResponse(savedUsuario, "Paciente registrado exitosamente");
+    return pacienteMapper.toRegisterResponse(savedUsuario);
   }
 
   @Transactional(readOnly = true)
-  public PatientCreationResponseDto getPacienteByEmail(String email) {
-    Usuario usuario = usuarioRepository.findByEmailWithRoles(email)
-        .orElseThrow(() -> new ResourceNotFoundException(
-            "Paciente no encontrado con email: " + email));
-    return pacienteMapper.toResponseDto(usuario);
+  public PatientDataResponseDto obtenerPaciente(Integer idPaciente) {
+
+    Usuario usuario = usuarioRepository.findById(idPaciente)
+        .orElseThrow(() -> new EntityNotFoundException("Paciente no encontrado"));
+
+    return pacienteMapper.toRegisterResponse(usuario);
   }
 
-  @Transactional(readOnly = true)
-  public PatientCreationResponseDto getPacienteById(Integer id) {
+  @Transactional
+  public void modificarPaciente(Integer id, PatientDataRequestDto dto) {
+
     Usuario usuario = usuarioRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(
-            "Paciente no encontrado con ID: " + id));
-    return pacienteMapper.toResponseDto(usuario);
+        .orElseThrow(() -> new EntityNotFoundException("Paciente no encontrado"));
+
+    if (!dto.getEmail().equalsIgnoreCase(usuario.getEmail())) {
+
+      validateEmailNotExists(dto.getEmail());
+    }
+
+    usuario.setEmail(dto.getEmail());
+    usuario.setTelefono(dto.getTelefono());
+
+    Usuario actualizado = usuarioRepository.save(usuario);
+
+    PacienteDetalle detalle = pacienteDetalleMapper
+        .toEntity(dto.getPacienteDetalle(), actualizado);
+    pacienteDetalleRepository.save(detalle);
+
   }
 
   public void cambiarPassword(Integer userId, String actual, String nueva) {
@@ -179,7 +194,7 @@ public class PacienteService {
 
   private Usuario createUsuarioBase(UsuarioBaseDto dto) {
     // Convertimos RegisterPacienteDto → Usuario
-    Usuario usuario = pacienteMapper.toEntity((RegisterPacienteDto) dto);
+    Usuario usuario = pacienteMapper.toEntity((PatientDataRequestDto) dto);
 
     // Guardamos la contraseña con BCrypt (el salt se genera internamente)
     usuario.setPasswordHash(passwordEncoder.encode(dto.getPassword()));

@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RegisterPacienteDto extends UsuarioBaseDto {
+public class PatientDataRequestDto extends UsuarioBaseDto {
  @Valid
  @NotNull(message = "Los detalles del paciente son obligatorios")
  private PacienteDetalleDto pacienteDetalle;
