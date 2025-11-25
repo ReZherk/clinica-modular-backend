@@ -33,6 +33,7 @@ public class CitaMapper {
         .motivo(cita.getMotivo())
         .fechaCreacion(cita.getFechaCreacion())
         .fechaActualizacion(cita.getFechaActualizacion())
+        .linkReunion(cita.getEnlaceReunion())
         .paciente(CitaResponseDto.PacienteInfoDto.builder()
             .id(paciente.getId())
             .nombres(paciente.getNombres())
