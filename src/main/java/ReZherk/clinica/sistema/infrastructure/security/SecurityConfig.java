@@ -113,6 +113,9 @@ public class SecurityConfig {
             .requestMatchers("/api/patient/register").permitAll()
             .requestMatchers("/api/patient/**").hasAuthority("PATIENT_VIEW")
 
+            .requestMatchers("/api/medico/citas/**")
+            .hasAuthority("DOCTOR_VIEW")
+
             // Todo lo demás requiere autenticación
             .anyRequest().authenticated())
         // Sin estado (JWT)
