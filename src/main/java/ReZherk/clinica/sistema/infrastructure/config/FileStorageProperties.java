@@ -1,0 +1,16 @@
+package ReZherk.clinica.sistema.infrastructure.config;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+@Component
+@ConfigurationProperties(prefix = "app.upload")
+@Getter
+@Setter
+public class FileStorageProperties {
+
+ private String dir = "uploads/fotos-perfil";
+ private String baseUrl = "/api/files/fotos-perfil";
+}
