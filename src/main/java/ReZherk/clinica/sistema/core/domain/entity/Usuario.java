@@ -43,6 +43,9 @@ public class Usuario {
  @Column(name = "Telefono", length = 20)
  private String telefono;
 
+ @Column(name = "foto_perfil")
+ private String fotoPerfil;
+
  @Column(name = "EstadoRegistro", nullable = false)
  @Builder.Default
  private Boolean estadoRegistro = true;
