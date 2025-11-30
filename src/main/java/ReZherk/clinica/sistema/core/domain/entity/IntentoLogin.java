@@ -6,7 +6,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Intento_Login")
+@Table(name = "intento_login")
 @Getter
 @Setter
 @NoArgsConstructor

@@ -76,9 +76,8 @@ public class PatientController {
     return ResponseEntity.ok(new ApiResponse<>(true, "Se actualizo satisfactoriamente el paciente", null));
   }
 
-  @PostMapping("/change-password")
-  public String cambiarPassword(@RequestBody ChangePasswordDto request,
-      @RequestAttribute("userId") Integer userId) {
+ @PostMapping("/users/{userId}/change-password")
+  public String cambiarPassword(@PathVariable Integer userId,@RequestBody ChangePasswordDto request) {
 
     pacienteService.cambiarPassword(userId, request.getPasswordActual(), request.getPasswordNueva());
     return "Contraseña actualizada correctamente";
