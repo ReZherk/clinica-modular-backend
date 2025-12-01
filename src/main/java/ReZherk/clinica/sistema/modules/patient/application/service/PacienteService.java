@@ -13,6 +13,7 @@ import ReZherk.clinica.sistema.core.shared.exception.ResourceNotFoundException;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCancelRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCreateRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.HorariosDisponiblesRequestDto;
+import ReZherk.clinica.sistema.modules.appointment.application.dto.response.CitaDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.CitaResponseDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.HorariosDisponiblesResponseDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.SpecialtyResponseDto;
@@ -45,6 +46,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -239,8 +241,10 @@ public class PacienteService {
   }
 
   @Transactional(readOnly = true)
-  public Page<CitaResponseDto> listarCitas(Integer idPaciente, Integer page, Integer size) {
-    return citaService.obtenerCitasPaciente(idPaciente, page, size);
+  public Page<CitaDto> listarCitas(Integer idPaciente, String paciente, LocalDate fecha, String estado,
+      Integer page,
+      Integer size) {
+    return citaService.obtenerCitasPacienteConFiltros(idPaciente, paciente, fecha, estado, page, size);
   }
 
   @Transactional(readOnly = true)

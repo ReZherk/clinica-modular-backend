@@ -41,15 +41,24 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
                         @Param("fecha") LocalDate fecha,
                         @Param("hora") LocalTime hora);
 
-        // Obtener todas las citas de un paciente
-        @Query("SELECT c FROM Cita c " +
+        // Buscar citas de un paciente con filtros opcionales
+        @Query("SELECT DISTINCT c FROM Cita c " +
                         "JOIN FETCH c.medicoHorario mh " +
                         "JOIN FETCH mh.medico m " +
                         "JOIN FETCH m.medicoDetalle md " +
                         "JOIN FETCH md.especialidad " +
-                        "WHERE c.paciente.id = :idPaciente " +
+                        "JOIN FETCH c.paciente p " +
+                        "WHERE p.id = :idPaciente " +
+                        "AND (:nombre IS NULL OR CONCAT(p.nombres, ' ', p.apellidos) LIKE %:nombre%) " +
+                        "AND (:fecha IS NULL OR c.fecha = :fecha) " +
+                        "AND (:estado IS NULL OR c.estado = :estado) " +
                         "ORDER BY c.fecha DESC, c.hora DESC")
-        Page<Cita> findAllByPacienteId(@Param("idPaciente") Integer idPaciente, Pageable pageable);
+        Page<Cita> findCitasPacienteConFiltros(
+                        @Param("idPaciente") Integer idPaciente,
+                        @Param("nombre") String nombrePaciente,
+                        @Param("fecha") LocalDate fecha,
+                        @Param("estado") EstadoCita estado,
+                        Pageable pageable);
 
         // Obtener cita por ID con todas las relaciones
         @Query("SELECT c FROM Cita c " +

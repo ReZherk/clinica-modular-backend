@@ -29,6 +29,7 @@ import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaC
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaFiltroRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaReprogramRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.HorariosDisponiblesRequestDto;
+import ReZherk.clinica.sistema.modules.appointment.application.dto.response.CitaDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.CitaListadoResult;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.CitaResponseDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.HorariosDisponiblesResponseDto;
@@ -102,13 +103,33 @@ public class CitaServiceImpl implements CitaService {
 
   @Override
   @Transactional(readOnly = true)
-  public Page<CitaResponseDto> obtenerCitasPaciente(Integer idPaciente, Integer page, Integer size) {
-    log.info("Obteniendo citas del paciente ID: {}", idPaciente);
+  public Page<CitaDto> obtenerCitasPacienteConFiltros(
+      Integer idPaciente,
+      String nombrePaciente,
+      LocalDate fecha,
+      String estado,
+      Integer page,
+      Integer size) {
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<Cita> citas = citaRepository.findAllByPacienteId(idPaciente, pageable);
 
-    return citas.map(citaMapper::toResponseDto);
+    EstadoCita estadoEnum = null;
+    if (estado != null && !estado.isBlank()) {
+      try {
+        estadoEnum = EstadoCita.valueOf(estado.toUpperCase());
+      } catch (IllegalArgumentException e) {
+        log.warn("Estado inválido recibido: {}. Se ignorará el filtro.", estado);
+      }
+    }
+
+    Page<Cita> citas = citaRepository.findCitasPacienteConFiltros(
+        idPaciente,
+        (nombrePaciente == null || nombrePaciente.isBlank()) ? null : nombrePaciente,
+        fecha,
+        estadoEnum,
+        pageable);
+
+    return citas.map(citaMapper::toDto);
   }
 
   @Override

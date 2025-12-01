@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +22,7 @@ import ReZherk.clinica.sistema.core.shared.enums.TipoTarjeta;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCancelRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.CitaCreateRequestDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.request.HorariosDisponiblesRequestDto;
+import ReZherk.clinica.sistema.modules.appointment.application.dto.response.CitaDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.CitaResponseDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.HorariosDisponiblesResponseDto;
 import ReZherk.clinica.sistema.modules.appointment.application.dto.response.SpecialtyResponseDto;
@@ -77,8 +80,8 @@ public class PatientController {
     return ResponseEntity.ok(new ApiResponse<>(true, "Se actualizo satisfactoriamente el paciente", null));
   }
 
- @PostMapping("/users/{userId}/change-password")
-  public String cambiarPassword(@PathVariable Integer userId,@RequestBody ChangePasswordDto request) {
+  @PostMapping("/users/{userId}/change-password")
+  public String cambiarPassword(@PathVariable Integer userId, @RequestBody ChangePasswordDto request) {
 
     pacienteService.cambiarPassword(userId, request.getPasswordActual(), request.getPasswordNueva());
     return "Contraseña actualizada correctamente";
@@ -104,12 +107,15 @@ public class PatientController {
 
   @GetMapping("/mis-citas/{idPaciente}")
   @Operation(summary = "Obtener mis citas", description = "Lista todas las citas del paciente autenticado")
-  public ResponseEntity<ApiResponse<Page<CitaResponseDto>>> obtenerMisCitas(
+  public ResponseEntity<ApiResponse<Page<CitaDto>>> obtenerMisCitas(
       @PathVariable Integer idPaciente,
+      @RequestParam(required = false) String nombrePaciente,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+      @RequestParam(required = false) String estado,
       @RequestParam(defaultValue = "0") Integer page,
       @RequestParam(defaultValue = "10") Integer size) {
 
-    Page<CitaResponseDto> citas = pacienteService.listarCitas(idPaciente, page, size);
+    Page<CitaDto> citas = pacienteService.listarCitas(idPaciente, nombrePaciente, fecha, estado, page, size);
     return ResponseEntity.ok(new ApiResponse<>(true, "Citas obtenidas exitosamente", citas));
   }
 

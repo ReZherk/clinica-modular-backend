@@ -16,7 +16,7 @@ import ReZherk.clinica.sistema.core.shared.enums.EstadoCita;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CitaResponseDto {
+public class CitaDto {
 
     private Integer idCita;
     private LocalDate fecha;
@@ -27,20 +27,16 @@ public class CitaResponseDto {
     private LocalDateTime fechaActualizacion;
     private String linkReunion;
 
-    // Información del paciente
-    private PacienteInfoDto paciente;
-
-    // Información del médico
-    private MedicoInfoDto medico;
-
-    // Información de la especialidad
-    private EspecialidadInfoDto especialidad;
+    private PacienteDto paciente;
+    private MedicoDto medico;
+    private EspecialidadDto especialidad;
+    private DetalleDto detalle; // Puede ser null si no hay DetalleCita
 
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class PacienteInfoDto {
+    public static class PacienteDto {
         private Integer id;
         private String nombres;
         private String apellidos;
@@ -53,7 +49,7 @@ public class CitaResponseDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class MedicoInfoDto {
+    public static class MedicoDto {
         private Integer id;
         private String nombres;
         private String apellidos;
@@ -64,11 +60,20 @@ public class CitaResponseDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class EspecialidadInfoDto {
+    public static class EspecialidadDto {
         private Integer id;
         private String nombreEspecialidad;
         private BigDecimal tarifa;
         private Byte duracion;
     }
 
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DetalleDto {
+        private String diagnostico;
+        private String receta;
+        private String observaciones;
+    }
 }
