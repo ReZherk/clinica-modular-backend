@@ -79,7 +79,7 @@ public class PacienteService {
     Usuario savedUsuario = usuarioRepository.save(usuario);
 
     PacienteDetalle detalle = pacienteDetalleMapper
-        .toEntity(registerDto.getPacienteDetalle(), savedUsuario);
+        .toNewEntity(registerDto.getPacienteDetalle(), savedUsuario);
     pacienteDetalleRepository.save(detalle);
 
     return pacienteMapper.toRegisterResponse(savedUsuario);
@@ -110,8 +110,10 @@ public class PacienteService {
 
     Usuario actualizado = usuarioRepository.save(usuario);
 
-    PacienteDetalle detalle = pacienteDetalleMapper
-        .toEntity(dto.getPacienteDetalle(), actualizado);
+    PacienteDetalle detalle = pacienteDetalleRepository.findByUsuario_Id(usuario.getId())
+        .orElseThrow(() -> new EntityNotFoundException("Detalle de paciente no encontrado"));
+
+    detalle = pacienteDetalleMapper.updateEntity(dto.getPacienteDetalle(), detalle, usuario);
     pacienteDetalleRepository.save(detalle);
 
   }

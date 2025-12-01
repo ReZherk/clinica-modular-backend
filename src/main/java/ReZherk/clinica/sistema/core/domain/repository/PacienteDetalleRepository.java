@@ -21,4 +21,7 @@ public interface PacienteDetalleRepository extends JpaRepository<PacienteDetalle
     WHERE u.estadoRegistro = true
    """)
  List<PacienteDetalle> findAllActivePatients();
+
+ Optional<PacienteDetalle> findByUsuario_Id(Integer usuarioId);
+
 }

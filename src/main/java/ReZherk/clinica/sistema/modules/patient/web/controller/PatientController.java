@@ -71,6 +71,7 @@ public class PatientController {
   @PutMapping("/{id}")
   public ResponseEntity<ApiResponse<Void>> updateUsuario(@PathVariable Integer id,
       @RequestBody PatientDataRequestDto data) {
+
     pacienteService.modificarPaciente(id, data);
 
     return ResponseEntity.ok(new ApiResponse<>(true, "Se actualizo satisfactoriamente el paciente", null));
